@@ -1,6 +1,8 @@
 # SAP HANA plug-in for Cytoscape
+## Description
 The SAP HANA plug-in for Cytoscape is an app to connect Cytoscape to [SAP HANA Graph](https://help.sap.com/viewer/11afa2e60a5f4192a381df30f94863f9/2021_2_QRC/en-US/30d1d8cfd5d0470dbaac2ebe20cefb8f.html). The current version delivers a basic integration for interacting with Graph Workspaces on SAP HANA.
 
+## Requirements
 The plugin is tested to work with [Cytoscape 3.9.0](https://cytoscape.org/), [SapMachine 11](https://sap.github.io/SapMachine/) and the latest [NGDBC Driver](https://tools.hana.ondemand.com/#hanatools).
 
 ![](doc/img/cover_image.png)
@@ -12,7 +14,7 @@ The current feature scope comprises:
 - Download an existing (homogeneous) graph workspace to Cytoscape
 - Refresh a downloaded workspace in the client
 
-## Installation
+## Downlaod and Installation
 ### Download
 The latest (bleeding edge) package can be downloaded in the [packages section](https://github.com/SAP/sap-hana-plugin-for-cytoscape/packages). Check the `Assets` list for the latest jar file.
 
@@ -72,3 +74,6 @@ By choosing `Create View`, you can create an initial visualization and adapt it 
 ![Graph visualization](doc/img/graph_visualization.png)
 
 Note, that in the `Node Table` and `Edge Table` you can also inspect the attribute data from the respective tables in SAP HANA.
+
+## Licensing
+Copyright (2021-)2022 SAP SE or an SAP affiliate company and `sap-hana-plugin-for-cytoscape` contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available via the [REUSE tool](https://api.reuse.software/info/github.com/SAP/sap-hana-plugin-for-cytoscape).
