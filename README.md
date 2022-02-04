@@ -1,3 +1,6 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/sap-hana-plugin-for-cytoscape)](https://api.reuse.software/info/github.com/SAP/sap-hana-plugin-for-cytoscape)
+
+
 # SAP HANA plug-in for Cytoscape
 ## Description
 The SAP HANA plug-in for Cytoscape is an app to connect Cytoscape to [SAP HANA Graph](https://help.sap.com/viewer/11afa2e60a5f4192a381df30f94863f9/2021_2_QRC/en-US/30d1d8cfd5d0470dbaac2ebe20cefb8f.html). The current version delivers a basic integration for interacting with Graph Workspaces on SAP HANA.
