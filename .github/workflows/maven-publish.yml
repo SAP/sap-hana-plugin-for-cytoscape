@@ -17,9 +17,9 @@ jobs:
     steps:
 
     - name: Delete Package Versions
-      uses: actions/delete-package-versions@v1.0.3
+      uses: actions/delete-package-versions@v2
       with:
-        package-name: 'org.sap.sap-hana-plugin-for-cytoscape'
+        package-name: org.sap.sap-hana-plugin-for-cytoscape
 
     - uses: actions/checkout@v2
     - name: Set up JDK 11
