@@ -64,6 +64,11 @@ public class CyCreateWorkspaceTaskTunables {
     @Tunable(description="Name", groups={"New Graph Workspace"}, listenForChange="networkSelection", required = true, gravity = 3)
     public String getWorkspaceName(){ return this.workspaceName; }
     public void setWorkspaceName(String workspaceName){
+
+        if(this.workspaceName != null && this.workspaceName.equals(workspaceName)){
+            return;
+        }
+
         this.edgeTableName = workspaceName + "_EDGES";
         this.nodeTableName = workspaceName + "_NODES";
         this.workspaceName = workspaceName;
