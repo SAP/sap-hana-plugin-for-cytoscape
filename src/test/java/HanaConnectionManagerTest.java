@@ -24,7 +24,8 @@ public class HanaConnectionManagerTest {
                     connectProps.getProperty("host"),
                     connectProps.getProperty("port"),
                     connectProps.getProperty("username"),
-                    connectProps.getProperty("password")
+                    connectProps.getProperty("password"),
+                    null
             );
 
             return testCred;

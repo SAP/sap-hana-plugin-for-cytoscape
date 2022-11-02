@@ -49,37 +49,6 @@ public class IOUtils {
     }
 
     /**
-     * Loads previously cached credentials from a properties file. If a password
-     * has been saved before, it assumes that the user wants to do the same again
-     * and pre-selects the checkbox to store passwords in plain text.
-     *
-     * @param file
-     * @return
-     */
-    public static HanaConnectionCredentials loadCredentials(String file) throws IOException {
-
-        try (InputStream input = new FileInputStream(file)) {
-            // load cached credentials
-            Properties credProps = new Properties();
-            credProps.load(input);
-
-            String host = credProps.getProperty("hdb.host");
-            String port = credProps.getProperty("hdb.port");
-            String username = credProps.getProperty("hdb.username");
-            String password = credProps.getProperty("hdb.password");
-
-            return new HanaConnectionCredentials(host, port, username, password);
-
-        } catch (IOException e) {
-            // this will happen at least on the first start and is likely
-            // not an issue
-            System.err.println("Cannot load cached connection credentials");
-            System.err.println(e);
-            throw e;
-        }
-    }
-
-    /**
      *
      * @param file
      * @throws IOException

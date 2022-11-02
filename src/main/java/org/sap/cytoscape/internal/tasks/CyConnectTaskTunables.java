@@ -2,7 +2,9 @@ package org.sap.cytoscape.internal.tasks;
 
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.sap.cytoscape.internal.hdb.HanaConnectionCredentials;
+import org.sap.cytoscape.internal.hdb.ProxyConnectionCredentials;
 import org.sap.cytoscape.internal.tunables.PasswordString;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
@@ -42,12 +44,51 @@ public class CyConnectTaskTunables {
     public PasswordString password;
 
     /**
+     * Determines if proxy configuration shall be used
+     */
+    @Tunable(description="Enable Proxy", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 7, params="displayState=collapsed")
+    public boolean enableProxyConfiguration;
+
+    /**
+     * Type of proxy: HTTP or SOCKS
+     */
+    @Tunable(description="Type", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 8, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public ListSingleSelection<String> proxyType = new ListSingleSelection<String>("HTTP", "SOCKS");
+
+    /**
+     * Hostname for proxy
+     */
+    @Tunable(description="Host", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 9, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public String proxyHost;
+
+    /**
+     * Port for proxy
+     */
+    @Tunable(description="Port", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 10, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public String proxyPort;
+
+    /**
+     * Username for proxy
+     */
+    @Tunable(description="Username", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 11, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public String proxyUsername;
+
+    /**
+     * Password for proxy
+     */
+    @Tunable(description="Password", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 12, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public PasswordString proxyPassword;
+
+    /**
      * Checkbox if password shall be stored in an unsecure way
      */
-    @Tunable(description="Save Password (plain text)", gravity = 5)
+    @Tunable(description="Save Password (plain text)", gravity = 13)
     public boolean savePassword;
 
-    @Tunable(description="Auto-Connect from Cache", dependsOn = "savePassword=true", gravity = 6)
+    /**
+     * Checkbox if connection should be established automatically if credentials have been stored
+     */
+    @Tunable(description="Auto-Connect from Cache", dependsOn = "savePassword=true", gravity = 14)
     public boolean autoConnect;
 
     /**
@@ -62,6 +103,15 @@ public class CyConnectTaskTunables {
             this.port = props.getProperty("hdb.port");
             this.username = props.getProperty("hdb.username");
             this.password = new PasswordString(props.getProperty("hdb.password"));
+
+            this.enableProxyConfiguration = Boolean.parseBoolean(props.getProperty("hdb.proxy.enabled", "false"));
+            if(props.getProperty("hdb.proxy.type") != null){
+                this.proxyType.setSelectedValue(props.getProperty("hdb.proxy.type"));
+            }
+            this.proxyHost = props.getProperty("hdb.proxy.host");
+            this.proxyPort = props.getProperty("hdb.proxy.port");
+            this.proxyUsername = props.getProperty("hdb.proxy.username");
+            this.proxyPassword = new PasswordString(props.getProperty("hdb.proxy.password"));
 
             // assume that the user still wants to store the password, if this
             // has been done before
@@ -78,8 +128,20 @@ public class CyConnectTaskTunables {
      * @return
      */
     public HanaConnectionCredentials getHanaConnectionCredentials(){
+        ProxyConnectionCredentials proxyConnectionCredentials = null;
+
+        if(this.enableProxyConfiguration){
+            proxyConnectionCredentials = new ProxyConnectionCredentials(
+                    this.proxyType.getSelectedValue().equals("HTTP"),
+                    this.proxyHost,
+                    this.proxyPort,
+                    this.proxyUsername,
+                    this.proxyPassword.getPassword()
+            );
+        }
+
         return new HanaConnectionCredentials(
-                this.host, this.port, this.username, this.password.getPassword()
+                this.host, this.port, this.username, this.password.getPassword(), proxyConnectionCredentials
         );
     }
 
@@ -94,11 +156,19 @@ public class CyConnectTaskTunables {
         credProps.setProperty("hdb.port", this.port);
         credProps.setProperty("hdb.username", this.username);
 
+        credProps.setProperty("hdb.proxy.enabled", String.valueOf(this.enableProxyConfiguration));
+        credProps.setProperty("hdb.proxy.type", this.proxyType.getSelectedValue());
+        credProps.setProperty("hdb.proxy.host", this.proxyHost);
+        credProps.setProperty("hdb.proxy.port", this.proxyPort);
+        credProps.setProperty("hdb.proxy.username", this.proxyUsername);
+
         if (savePassword) {
             credProps.setProperty("hdb.password", this.password.getPassword());
+            credProps.setProperty("hdb.proxy.password", this.proxyPassword.getPassword());
         } else {
             // overwrite previously saved passwords
             credProps.setProperty("hdb.password", "");
+            credProps.setProperty("hdb.proxy.password", "");
         }
 
         credProps.setProperty("hdb.autoconnect", String.valueOf(this.autoConnect));

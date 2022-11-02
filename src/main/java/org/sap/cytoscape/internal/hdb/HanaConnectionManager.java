@@ -48,15 +48,14 @@ public class HanaConnectionManager {
      *
      * @param host      Host address
      * @param port      Port number
-     * @param username  Db Username
-     * @param password  Password
+     * @param connectionProperties  Properties to be used (at least user and password)
      */
-    public void connect(String host, String port, String username, String password) throws SQLException {
+    public void connect(String host, String port, Properties connectionProperties) throws SQLException {
+
         this.connection = null;
+
         try {
-            this.connection = DriverManager.getConnection(
-                    "jdbc:sap://" + host + ":" + port + "/?autocommit=true",
-                    username, password);
+            this.connection = DriverManager.getConnection("jdbc:sap://" + host + ":" + port + "/", connectionProperties);
 
             if (this.connection.isValid(1500)){
                 this.buildVersion = this.executeQuerySingleValue(this.sqlStrings.getProperty("GET_BUILD"), null, String.class);
@@ -76,7 +75,27 @@ public class HanaConnectionManager {
      * @param cred  Connection credentials
      */
     public void connect(HanaConnectionCredentials cred) throws SQLException {
-        this.connect(cred.host, cred.port, cred.username, cred.password);
+
+        Properties connectionProperties = new Properties();
+        connectionProperties.setProperty("autocommit", "true");
+        connectionProperties.setProperty("user", cred.username);
+        connectionProperties.setProperty("password", cred.password);
+        connectionProperties.setProperty("useProxy", "false");
+
+        if(cred.proxyConnectionCredentials != null) {
+            connectionProperties.setProperty("useProxy", "true");
+            connectionProperties.setProperty("proxyHttp", String.valueOf(cred.proxyConnectionCredentials.isHttpProxy));
+            connectionProperties.setProperty("proxyHostname", cred.proxyConnectionCredentials.host);
+            connectionProperties.setProperty("proxyPort", cred.proxyConnectionCredentials.port);
+            connectionProperties.setProperty("useProxyAuth", "false");
+            if(cred.proxyConnectionCredentials.username.length() > 0){
+                connectionProperties.setProperty("useProxyAuth", "true");
+                connectionProperties.setProperty("proxyUsername", cred.proxyConnectionCredentials.username);
+                connectionProperties.setProperty("proxyPassword", cred.proxyConnectionCredentials.password);
+            }
+        }
+
+        this.connect(cred.host, cred.port, connectionProperties);
     }
 
     /**
