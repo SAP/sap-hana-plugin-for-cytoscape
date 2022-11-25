@@ -1,6 +1,7 @@
 package org.sap.cytoscape.internal.tasks;
 
 import org.cytoscape.work.*;
+import org.sap.cytoscape.internal.exceptions.HanaConnectionManagerException;
 import org.sap.cytoscape.internal.hdb.HanaConnectionCredentials;
 import org.sap.cytoscape.internal.hdb.HanaConnectionManager;
 
@@ -26,7 +27,7 @@ public class CyConnectTask extends AbstractTask {
                 HanaConnectionCredentials cred = tunables.getHanaConnectionCredentials();
                 try {
                     connectionManager.connect(cred);
-                } catch (SQLException e){
+                } catch (SQLException | HanaConnectionManagerException e){
                     return false;
                 }
             }
@@ -81,7 +82,7 @@ public class CyConnectTask extends AbstractTask {
         try{
             connectionManager.connect(tunables.getHanaConnectionCredentials());
             taskMonitor.showMessage(TaskMonitor.Level.INFO, "Successfully connected to " + tunables.host);
-        } catch (SQLException e){
+        } catch (SQLException | HanaConnectionManagerException e){
             taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Could not establish connection to " + tunables.host);
             taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.toString());
         }

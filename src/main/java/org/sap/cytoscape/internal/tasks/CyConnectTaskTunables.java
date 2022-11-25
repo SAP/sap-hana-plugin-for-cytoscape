@@ -9,6 +9,7 @@ import org.sap.cytoscape.internal.tunables.PasswordString;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 public class CyConnectTaskTunables {
@@ -22,73 +23,80 @@ public class CyConnectTaskTunables {
     /**
      * host address
      */
-    @Tunable(description="Host", groups={"SAP HANA Database"}, required = true, gravity = 1)
+    @Tunable(description="Host", groups={"SAP HANA Database"}, required = true, gravity = 10)
     public String host;
 
     /**
      * Port number (e.g. 443 for SAP HANA Cloud)
      */
-    @Tunable(description="Port", groups={"SAP HANA Database"}, required = true, gravity = 2)
+    @Tunable(description="Port", groups={"SAP HANA Database"}, required = true, gravity = 20)
     public String port;
+
+    /**
+     * Specifies advanced option to pass as part of the connection string. This is supposed
+     * to be a semicolon separated list of connection properties.
+     */
+    @Tunable(description="Advanced Properties", groups={"SAP HANA Database"}, required = false, gravity = 25)
+    public String advancedProperties;
 
     /**
      * Database username
      */
-    @Tunable(description="Username", groups={"User Credentials"}, required = true, gravity = 3)
+    @Tunable(description="Username", groups={"User Credentials"}, required = true, gravity = 30)
     public String username;
 
     /**
      * User password
      */
-    @Tunable(description="Password", groups={"User Credentials"}, required = true, gravity = 4)
+    @Tunable(description="Password", groups={"User Credentials"}, required = true, gravity = 40)
     public PasswordString password;
 
     /**
      * Determines if proxy configuration shall be used
      */
-    @Tunable(description="Enable Proxy", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 7, params="displayState=collapsed")
+    @Tunable(description="Enable Proxy", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 70, params="displayState=collapsed")
     public boolean enableProxyConfiguration;
 
     /**
      * Type of proxy: HTTP or SOCKS
      */
-    @Tunable(description="Type", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 8, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    @Tunable(description="Type", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 80, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
     public ListSingleSelection<String> proxyType = new ListSingleSelection<String>("HTTP", "SOCKS");
 
     /**
      * Hostname for proxy
      */
-    @Tunable(description="Host", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 9, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    @Tunable(description="Host", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 90, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
     public String proxyHost;
 
     /**
      * Port for proxy
      */
-    @Tunable(description="Port", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 10, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    @Tunable(description="Port", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 100, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
     public String proxyPort;
 
     /**
      * Username for proxy
      */
-    @Tunable(description="Username", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 11, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    @Tunable(description="Username", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 110, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
     public String proxyUsername;
 
     /**
      * Password for proxy
      */
-    @Tunable(description="Password", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 12, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    @Tunable(description="Password", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 120, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
     public PasswordString proxyPassword;
 
     /**
      * Checkbox if password shall be stored in an unsecure way
      */
-    @Tunable(description="Save Password (plain text)", gravity = 13)
+    @Tunable(description="Save Password (plain text)", gravity = 130)
     public boolean savePassword;
 
     /**
      * Checkbox if connection should be established automatically if credentials have been stored
      */
-    @Tunable(description="Auto-Connect from Cache", dependsOn = "savePassword=true", gravity = 14)
+    @Tunable(description="Auto-Connect from Cache", dependsOn = "savePassword=true", gravity = 140)
     public boolean autoConnect;
 
     /**
@@ -101,6 +109,7 @@ public class CyConnectTaskTunables {
 
             this.host = props.getProperty("hdb.host");
             this.port = props.getProperty("hdb.port");
+            this.advancedProperties = props.getProperty("hdb.advancedproperties");
             this.username = props.getProperty("hdb.username");
             this.password = new PasswordString(props.getProperty("hdb.password"));
 
@@ -141,7 +150,12 @@ public class CyConnectTaskTunables {
         }
 
         return new HanaConnectionCredentials(
-                this.host, this.port, this.username, this.password.getPassword(), proxyConnectionCredentials
+                this.host,
+                this.port,
+                this.username,
+                this.password.getPassword(),
+                this.advancedProperties,
+                proxyConnectionCredentials
         );
     }
 
@@ -153,6 +167,7 @@ public class CyConnectTaskTunables {
 
         Properties credProps = new Properties();
         credProps.setProperty("hdb.host", this.host);
+        credProps.setProperty("hdb.advancedproperties", this.advancedProperties);
         credProps.setProperty("hdb.port", this.port);
         credProps.setProperty("hdb.username", this.username);
 

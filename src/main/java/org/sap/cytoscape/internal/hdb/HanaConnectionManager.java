@@ -74,13 +74,15 @@ public class HanaConnectionManager {
      *
      * @param cred  Connection credentials
      */
-    public void connect(HanaConnectionCredentials cred) throws SQLException {
+    public void connect(HanaConnectionCredentials cred) throws SQLException, HanaConnectionManagerException {
 
         Properties connectionProperties = new Properties();
         connectionProperties.setProperty("autocommit", "true");
         connectionProperties.setProperty("user", cred.username);
         connectionProperties.setProperty("password", cred.password);
         connectionProperties.setProperty("useProxy", "false");
+
+        connectionProperties.putAll(cred.generateAdvancedProperties());
 
         if(cred.proxyConnectionCredentials != null) {
             connectionProperties.setProperty("useProxy", "true");

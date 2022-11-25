@@ -2,6 +2,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sap.cytoscape.internal.exceptions.HanaConnectionManagerException;
 import org.sap.cytoscape.internal.hdb.*;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
+
+import static org.junit.Assert.fail;
 
 public class HanaConnectionManagerTest {
 
@@ -25,6 +28,7 @@ public class HanaConnectionManagerTest {
                     connectProps.getProperty("port"),
                     connectProps.getProperty("username"),
                     connectProps.getProperty("password"),
+                    null,
                     null
             );
 
@@ -35,7 +39,7 @@ public class HanaConnectionManagerTest {
         }
     }
 
-    private static HanaConnectionManager connectToTestInstance() throws SQLException, IOException {
+    private static HanaConnectionManager connectToTestInstance() throws SQLException, IOException, HanaConnectionManagerException {
         HanaConnectionManager connectionManager = new HanaConnectionManager();
         connectionManager.connect(getTestCredentials());
         return connectionManager;
@@ -53,7 +57,7 @@ public class HanaConnectionManagerTest {
     }
 
     @BeforeClass
-    public static void setUp() throws IOException, SQLException {
+    public static void setUp() throws IOException, SQLException, HanaConnectionManagerException {
         sqlStringsTest = IOUtils.loadResourceProperties("SqlStringsTest.sql");
         testSchema = "CYTOSCAPE_TEST_" + UUID.randomUUID().toString();
 
@@ -80,7 +84,7 @@ public class HanaConnectionManagerTest {
             Assert.assertTrue(connectionManager.schemaExists(testSchema));
             Assert.assertEquals(testSchema, connectionManager.getCurrentSchema());
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 
@@ -91,11 +95,33 @@ public class HanaConnectionManagerTest {
         try{
             currentSchema = connectionManager.getCurrentSchema();
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
 
         Assert.assertNotNull(currentSchema);
         Assert.assertTrue(currentSchema.length() > 0);
+    }
+
+    @Test
+    public void testAdvancedJdbcProperties(){
+        try {
+            HanaConnectionManager tmpConMgr = new HanaConnectionManager();
+            HanaConnectionCredentials cred = getTestCredentials();
+
+            cred.advancedProperties = "user=" + cred.username + ";password=" + cred.password;
+            cred.username = "";
+            cred.password = "";
+
+            tmpConMgr.connect(cred);
+
+            String currentSchema = tmpConMgr.getCurrentSchema();
+            Assert.assertNotNull(currentSchema);
+            Assert.assertTrue(currentSchema.length() > 0);
+
+        } catch (Exception e) {
+            Assert.fail();
+        }
+
     }
 
     @Test
@@ -108,20 +134,20 @@ public class HanaConnectionManagerTest {
                     null
             );
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
 
         List<Object[]> resultList = queryResult.getRecordList();
 
-        if(resultList == null || resultList.size() != 2) Assert.fail();
+        if(resultList == null || resultList.size() != 2) fail();
 
         Object[] firstRow = resultList.get(0);
-        if(!firstRow[0].equals("A")) Assert.fail();
-        if(!firstRow[1].equals("B")) Assert.fail();
+        if(!firstRow[0].equals("A")) fail();
+        if(!firstRow[1].equals("B")) fail();
 
         Object[] secondRow = resultList.get(1);
-        if(!secondRow[0].equals("C")) Assert.fail();
-        if(!secondRow[1].equals("D")) Assert.fail();
+        if(!secondRow[0].equals("C")) fail();
+        if(!secondRow[1].equals("D")) fail();
     }
 
     @Test
@@ -130,7 +156,7 @@ public class HanaConnectionManagerTest {
         try {
             sspWorkspace = connectionManager.loadGraphWorkspace(connectionManager.getCurrentSchema(), "SSP");
         } catch (Exception e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
 
         Assert.assertNotNull(sspWorkspace);
@@ -145,7 +171,7 @@ public class HanaConnectionManagerTest {
         try {
             flightsWorkspace = connectionManager.loadGraphWorkspace(this.connectionManager.getCurrentSchema(), "FLIGHTS");
         } catch (Exception e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
 
         Assert.assertNotNull(flightsWorkspace);
@@ -163,7 +189,7 @@ public class HanaConnectionManagerTest {
             workspaceList = connectionManager.listGraphWorkspaces();
             currentSchema = connectionManager.getCurrentSchema();
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
 
         boolean foundSSPWorkspace = false;
@@ -174,7 +200,7 @@ public class HanaConnectionManagerTest {
             }else if(ws.schema.equals(currentSchema) && ws.name.equals("FLIGHTS")){
                 foundFlightsWorkspace = true;
             } else if(ws.schema.equals(currentSchema)){
-                Assert.fail("Unknown workspace retrieved");
+                fail("Unknown workspace retrieved");
             }
         }
 
@@ -188,7 +214,7 @@ public class HanaConnectionManagerTest {
             Assert.assertTrue(connectionManager.schemaExists("SYS"));
             Assert.assertFalse(connectionManager.schemaExists("THIS_SCHEMA_DOES_NOT_EXIST"));
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 
@@ -221,11 +247,11 @@ public class HanaConnectionManagerTest {
                 } else if(colInfo.name.equals("COL3")){
                     Assert.assertEquals(Types.DOUBLE, colInfo.dataType.getSqlDataType());
                 } else {
-                    Assert.fail("Unknown column");
+                    fail("Unknown column");
                 }
             }
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 
@@ -258,7 +284,7 @@ public class HanaConnectionManagerTest {
             ), null, Integer.class);
             Assert.assertEquals(nRecords, actualRecords);
         } catch (SQLException e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 
@@ -276,7 +302,7 @@ public class HanaConnectionManagerTest {
                 }
             }
         }catch(Exception e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 
@@ -298,7 +324,7 @@ public class HanaConnectionManagerTest {
             }
 
         }catch(Exception e){
-            Assert.fail(e.toString());
+            fail(e.toString());
         }
     }
 }
