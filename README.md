@@ -17,7 +17,7 @@ The current feature scope comprises:
 - Download an existing (homogeneous) graph workspace to Cytoscape
 - Refresh a downloaded workspace in the client
 
-## Downlaod and Installation
+## Download and Installation
 ### Download
 The latest (bleeding edge) package can be downloaded in the [packages section](https://github.com/SAP/sap-hana-plugin-for-cytoscape/packages). Check the `Assets` list for the latest jar file.
 
@@ -36,13 +36,15 @@ After installation, you should be able to find the plugin under `Apps` > `SAP HA
 
 ## Usage
 ### Establishing a Connection to SAP HANA (Cloud)
-To establish a connection to SAP HANA (Cloud), you will need to enter host, port, username and your password. The credentials will be cached locally in the user folder to make future connections more convenient.
+To establish a connection to SAP HANA (Cloud), you will need to enter host, port, username and your password. The settings will be cached locally in the user folder to make future connections more convenient.
 
 ![SAP HANA Connection Dialog](doc/img/connection_dialog.png)
 
 For even more convenience and at the cost of security, you can optionally store the password. 
 
 > Please be aware, that your password will be stored as plain text!
+
+You may optionally specify a proxy configuration as well as advanced JDBC properties (format: `property1=value2;property2=value2`). The advanced JDBC properties may for example be used to specify a [Secure User Store (hdbuserstore)](https://help.sap.com/docs/SAP_HANA_PLATFORM/b3ee5778bc2e4a089d3299b82ec762a7/dd95ac9dbb571014a7d7f0234d762fdb.html?version=2.0.05).
 
 You can check the task history of Cytoscape to verify, that the connection has been established successfully.
 
