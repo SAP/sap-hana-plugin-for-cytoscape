@@ -124,7 +124,7 @@ public class CyConnectTaskTunables {
 
             // assume that the user still wants to store the password, if this
             // has been done before
-            this.savePassword = this.password.getPassword().length() > 0;
+            this.savePassword = this.password.getPassword().length() > 0 || (this.enableProxyConfiguration == true && this.proxyPassword.getPassword().length() > 0);
             this.autoConnect = Boolean.parseBoolean(props.getProperty("hdb.autoconnect"));
 
         }catch (IOException e){
