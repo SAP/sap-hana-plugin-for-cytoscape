@@ -2,8 +2,10 @@ package org.sap.cytoscape.internal.tasks;
 
 import org.cytoscape.model.*;
 import org.cytoscape.work.*;
+import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
 import org.sap.cytoscape.internal.hdb.*;
 import org.sap.cytoscape.internal.utils.CyUtils;
+import static org.sap.cytoscape.internal.utils.CyLogging.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -115,7 +117,13 @@ public class CyLoadTask extends AbstractTask {
 
         // create edges
         for(HanaEdgeTableRow row: graphWorkspace.getEdgeTable()){
-            CyUtils.addNewEdgeToNetwork(newNetwork, graphWorkspace, row, nodesByHanaKey);
+            try{
+                CyUtils.addNewEdgeToNetwork(newNetwork, graphWorkspace, row, nodesByHanaKey);
+            } catch (GraphIncosistencyException e) {
+                // ignore this edge
+                taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.toString());
+                taskMonitor.showMessage(TaskMonitor.Level.ERROR,"Edge " + row.getKeyValue(String.class) + " will be omitted");
+            }
             taskMonitor.setProgress(progress++ / (double)nGraphObjects);
         }
 

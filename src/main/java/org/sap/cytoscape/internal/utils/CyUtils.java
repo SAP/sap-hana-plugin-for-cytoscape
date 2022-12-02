@@ -1,10 +1,13 @@
 package org.sap.cytoscape.internal.utils;
 
 import org.cytoscape.model.*;
+import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
 import org.sap.cytoscape.internal.hdb.*;
 
 import java.util.HashMap;
 import java.util.List;
+
+import static org.sap.cytoscape.internal.utils.CyLogging.*;
 
 public class CyUtils {
 
@@ -108,16 +111,25 @@ public class CyUtils {
      * @param nodesByHanaKey
      * @return
      */
-    public static CyEdge addNewEdgeToNetwork(CyNetwork network, HanaGraphWorkspace graphWorkspace, HanaEdgeTableRow row, HashMap<String, CyNode> nodesByHanaKey){
+    public static CyEdge addNewEdgeToNetwork(CyNetwork network, HanaGraphWorkspace graphWorkspace, HanaEdgeTableRow row, HashMap<String, CyNode> nodesByHanaKey) throws GraphIncosistencyException {
         CyNode sourceNode = nodesByHanaKey.get(row.getSourceValue(String.class));
-        String sourceNodeName = network.getDefaultNodeTable().getRow(sourceNode.getSUID()).get("name", String.class);
+        if (sourceNode == null) {
+            err("Source node with id " + row.getSourceValue(String.class) + " is not existing.");
+            throw new GraphIncosistencyException("Source node with id " + row.getSourceValue(String.class) + " is not existing.");
+        }
         CyNode targetNode = nodesByHanaKey.get(row.getTargetValue(String.class));
-        String targetNodeName = network.getDefaultNodeTable().getRow(targetNode.getSUID()).get("name", String.class);
+        if (targetNode == null) {
+            throw new GraphIncosistencyException("Target node with id " + row.getTargetValue(String.class) + " is not existing.");
+        }
 
         CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);
         CyRow newRow = network.getDefaultEdgeTable().getRow(newEdge.getSUID());
 
+        // generate an edge name
+        String sourceNodeName = network.getDefaultNodeTable().getRow(sourceNode.getSUID()).get("name", String.class);
+        String targetNodeName = network.getDefaultNodeTable().getRow(targetNode.getSUID()).get("name", String.class);
         newRow.set("name", sourceNodeName + " -> " + targetNodeName);
+
         for(HanaColumnInfo field : graphWorkspace.getEdgeFieldList()){
             // convert to target type in case an existing cytoscape field is re-used
             Class fieldType = network.getDefaultEdgeTable().getColumn(field.name).getType();
