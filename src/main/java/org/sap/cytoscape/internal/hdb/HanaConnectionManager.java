@@ -1,5 +1,6 @@
 package org.sap.cytoscape.internal.hdb;
 
+import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
 import org.sap.cytoscape.internal.exceptions.HanaConnectionManagerException;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
@@ -354,6 +355,9 @@ public class HanaConnectionManager {
      * @param graphWorkspace    HANA Graph Workspace with complete metadata
      */
     private void loadNetworkNodes(HanaGraphWorkspace graphWorkspace) throws SQLException {
+
+        if(graphWorkspace.isEdgeOnlyGraph()) return;
+
         info("Loading network nodes of "+ graphWorkspace.getWorkspaceDbObject().toString());
 
         String fields = "";
@@ -435,7 +439,7 @@ public class HanaConnectionManager {
      * @param graphWorkspaceName    Name of the workspace to be loaded
      * @return                      HanaGraphWorkspace Object
      */
-    public HanaGraphWorkspace loadGraphWorkspace(String schema, String graphWorkspaceName) throws SQLException, HanaConnectionManagerException {
+    public HanaGraphWorkspace loadGraphWorkspace(String schema, String graphWorkspaceName) throws SQLException, HanaConnectionManagerException, GraphIncosistencyException {
 
         HanaGraphWorkspace graphWorkspace =
                 new HanaGraphWorkspace(new HanaDbObject(schema, graphWorkspaceName));
@@ -443,6 +447,10 @@ public class HanaConnectionManager {
         loadWorkspaceMetadata(graphWorkspace);
         loadNetworkNodes(graphWorkspace);
         loadNetworkEdges(graphWorkspace);
+
+        if(graphWorkspace.isEdgeOnlyGraph()){
+            graphWorkspace.inferNodesFromEdges();
+        }
 
         return graphWorkspace;
     }
@@ -454,7 +462,7 @@ public class HanaConnectionManager {
      * @param graphWorkspace    Schema and Name of the workspace to be loaded
      * @return                  HanaGraphWorkspace Object
      */
-    public HanaGraphWorkspace loadGraphWorkspace(HanaDbObject graphWorkspace) throws SQLException, HanaConnectionManagerException {
+    public HanaGraphWorkspace loadGraphWorkspace(HanaDbObject graphWorkspace) throws SQLException, HanaConnectionManagerException, GraphIncosistencyException {
         return loadGraphWorkspace(graphWorkspace.schema, graphWorkspace.name);
     }
 

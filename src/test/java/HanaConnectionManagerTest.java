@@ -11,8 +11,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
 
-import static org.junit.Assert.fail;
-
 public class HanaConnectionManagerTest {
 
     private static HanaConnectionManager connectionManager;
@@ -48,6 +46,7 @@ public class HanaConnectionManagerTest {
     private static void createSspGraph() throws SQLException {
         connectionManager.execute((sqlStringsTest.getProperty("CREATE_SSP_TABLES")));
         connectionManager.execute((sqlStringsTest.getProperty("CREATE_SSP_WORKSPACE")));
+        connectionManager.execute((sqlStringsTest.getProperty("CREATE_SSP_WORKSPACE_ONLY_EDGES")));
     }
 
     private static void createFlightsGraph() throws SQLException {
@@ -84,7 +83,7 @@ public class HanaConnectionManagerTest {
             Assert.assertTrue(connectionManager.schemaExists(testSchema));
             Assert.assertEquals(testSchema, connectionManager.getCurrentSchema());
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
 
@@ -95,7 +94,7 @@ public class HanaConnectionManagerTest {
         try{
             currentSchema = connectionManager.getCurrentSchema();
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         Assert.assertNotNull(currentSchema);
@@ -134,20 +133,20 @@ public class HanaConnectionManagerTest {
                     null
             );
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         List<Object[]> resultList = queryResult.getRecordList();
 
-        if(resultList == null || resultList.size() != 2) fail();
+        if(resultList == null || resultList.size() != 2) Assert.fail();
 
         Object[] firstRow = resultList.get(0);
-        if(!firstRow[0].equals("A")) fail();
-        if(!firstRow[1].equals("B")) fail();
+        if(!firstRow[0].equals("A")) Assert.fail();
+        if(!firstRow[1].equals("B")) Assert.fail();
 
         Object[] secondRow = resultList.get(1);
-        if(!secondRow[0].equals("C")) fail();
-        if(!secondRow[1].equals("D")) fail();
+        if(!secondRow[0].equals("C")) Assert.fail();
+        if(!secondRow[1].equals("D")) Assert.fail();
     }
 
     @Test
@@ -156,7 +155,7 @@ public class HanaConnectionManagerTest {
         try {
             sspWorkspace = connectionManager.loadGraphWorkspace(connectionManager.getCurrentSchema(), "SSP");
         } catch (Exception e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         Assert.assertNotNull(sspWorkspace);
@@ -171,7 +170,7 @@ public class HanaConnectionManagerTest {
         try {
             flightsWorkspace = connectionManager.loadGraphWorkspace(this.connectionManager.getCurrentSchema(), "FLIGHTS");
         } catch (Exception e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         Assert.assertNotNull(flightsWorkspace);
@@ -189,22 +188,26 @@ public class HanaConnectionManagerTest {
             workspaceList = connectionManager.listGraphWorkspaces();
             currentSchema = connectionManager.getCurrentSchema();
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
 
         boolean foundSSPWorkspace = false;
+        boolean foundSSPOnlyEdgeWorkspace = false;
         boolean foundFlightsWorkspace = false;
         for(HanaDbObject ws : workspaceList){
             if(ws.schema.equals(currentSchema) && ws.name.equals("SSP")){
                 foundSSPWorkspace = true;
-            }else if(ws.schema.equals(currentSchema) && ws.name.equals("FLIGHTS")){
+            } else if(ws.schema.equals(currentSchema) && ws.name.equals("SSP_ONLY_EDGES")){
+                foundSSPOnlyEdgeWorkspace = true;
+            } else if(ws.schema.equals(currentSchema) && ws.name.equals("FLIGHTS")){
                 foundFlightsWorkspace = true;
             } else if(ws.schema.equals(currentSchema)){
-                fail("Unknown workspace retrieved");
+                Assert.fail("Unknown workspace retrieved");
             }
         }
 
         Assert.assertTrue(foundSSPWorkspace);
+        Assert.assertTrue(foundSSPOnlyEdgeWorkspace);
         Assert.assertTrue(foundFlightsWorkspace);
     }
 
@@ -214,7 +217,7 @@ public class HanaConnectionManagerTest {
             Assert.assertTrue(connectionManager.schemaExists("SYS"));
             Assert.assertFalse(connectionManager.schemaExists("THIS_SCHEMA_DOES_NOT_EXIST"));
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
 
@@ -247,11 +250,11 @@ public class HanaConnectionManagerTest {
                 } else if(colInfo.name.equals("COL3")){
                     Assert.assertEquals(Types.DOUBLE, colInfo.dataType.getSqlDataType());
                 } else {
-                    fail("Unknown column");
+                    Assert.fail("Unknown column");
                 }
             }
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
 
@@ -284,7 +287,7 @@ public class HanaConnectionManagerTest {
             ), null, Integer.class);
             Assert.assertEquals(nRecords, actualRecords);
         } catch (SQLException e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
 
@@ -302,7 +305,7 @@ public class HanaConnectionManagerTest {
                 }
             }
         }catch(Exception e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
 
@@ -324,7 +327,23 @@ public class HanaConnectionManagerTest {
             }
 
         }catch(Exception e){
-            fail(e.toString());
+            Assert.fail(e.toString());
         }
     }
+
+    @Test
+    public void testOnlyEdgeWorkspace(){
+        HanaGraphWorkspace sspWorkspace = null;
+        try {
+            sspWorkspace = connectionManager.loadGraphWorkspace(connectionManager.getCurrentSchema(), "SSP_ONLY_EDGES");
+        } catch (Exception e){
+            Assert.fail(e.toString());
+        }
+
+        Assert.assertNotNull(sspWorkspace);
+        Assert.assertTrue(sspWorkspace.isMetadataComplete());
+        Assert.assertEquals(6, sspWorkspace.getEdgeTable().size());
+        Assert.assertEquals(4, sspWorkspace.getNodeTable().size());
+    }
+
 }

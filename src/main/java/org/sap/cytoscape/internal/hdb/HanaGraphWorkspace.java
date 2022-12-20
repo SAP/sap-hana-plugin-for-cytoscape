@@ -1,6 +1,7 @@
 package org.sap.cytoscape.internal.hdb;
 
 import org.cytoscape.model.*;
+import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
 
 import java.sql.Types;
 import java.util.*;
@@ -35,6 +36,8 @@ public class HanaGraphWorkspace{
 
     private Map<String, HanaColumnInfo> nodeFields;
 
+    private boolean isEdgeOnlyGraph;
+
     /**
      *
      * @param targetTable
@@ -63,6 +66,7 @@ public class HanaGraphWorkspace{
         this.nodeFields = new HashMap<>();
         this.nodeTable = new ArrayList<>();
         this.edgeTable = new ArrayList<>();
+        this.isEdgeOnlyGraph = true;
     }
 
     /**
@@ -88,6 +92,7 @@ public class HanaGraphWorkspace{
 
         this();
 
+        this.isEdgeOnlyGraph = false;
         this.workspaceDbObject = new HanaDbObject(schema, workspaceName);
         this.nodeTableDbObject = new HanaDbObject(schema, nodeTableName);
         this.edgeTableDbObject = new HanaDbObject(schema, edgeTableName);
@@ -158,6 +163,38 @@ public class HanaGraphWorkspace{
         }
     }
 
+    public void inferNodesFromEdges() throws GraphIncosistencyException {
+
+        if(!this.isEdgeOnlyGraph) {
+            throw new GraphIncosistencyException("Cannot infer nodes from edges for non edge-only graphs");
+        }
+
+        this.nodeKeyColName = "NodeID";
+        this.nodeFields.put(this.nodeKeyColName, new HanaColumnInfo("", "", this.nodeKeyColName, Types.NVARCHAR, true, true));
+
+        Map<String, HanaNodeTableRow> inferredNodes = new HashMap<String, HanaNodeTableRow>();
+
+        for(HanaEdgeTableRow row : this.edgeTable){
+            String newNode = row.getSourceValue(String.class);
+            if(!inferredNodes.containsKey(newNode)){
+                HanaNodeTableRow newRow = new HanaNodeTableRow();
+                newRow.setKeyFieldName(this.nodeKeyColName);
+                newRow.addFieldValue(this.nodeKeyColName, newNode);
+                inferredNodes.put(newNode, newRow);
+            }
+
+            newNode = row.getTargetValue(String.class);
+            if(!inferredNodes.containsKey(newNode)){
+                HanaNodeTableRow newRow = new HanaNodeTableRow();
+                newRow.setKeyFieldName(this.nodeKeyColName);
+                newRow.addFieldValue(this.nodeKeyColName, newNode);
+                inferredNodes.put(newNode, newRow);
+            }
+        }
+
+        this.nodeTable = new ArrayList<HanaNodeTableRow>(inferredNodes.values());
+    }
+
     /**
      * Checks if metadata is complete
      * (i.e. table contents can be loaded given the existing metadata)
@@ -170,7 +207,7 @@ public class HanaGraphWorkspace{
         if(workspaceDbObject.schema == null || workspaceDbObject.schema.length() == 0) return false;
         if(workspaceDbObject.name == null || workspaceDbObject.name.length() == 0) return false;
 
-        if(!this.nodeFields.containsKey(nodeKeyColName)) return false;
+        if(!this.isEdgeOnlyGraph && !this.nodeFields.containsKey(nodeKeyColName)) return false;
         if(!this.edgeFields.containsKey(edgeKeyColName)) return false;
         if(!this.edgeFields.containsKey(edgeSourceColName)) return false;
         if(!this.edgeFields.containsKey(edgeTargetColName)) return false;
@@ -182,8 +219,12 @@ public class HanaGraphWorkspace{
         return true;
     }
 
+    public boolean isEdgeOnlyGraph() {
+        return this.isEdgeOnlyGraph;
+    }
+
     public List<HanaEdgeTableRow> getEdgeTable() {
-        return edgeTable;
+        return this.edgeTable;
     }
 
     public void setEdgeTable(List<HanaEdgeTableRow> edgeTable) {
@@ -195,7 +236,7 @@ public class HanaGraphWorkspace{
     }
 
     public List<HanaNodeTableRow> getNodeTable() {
-        return nodeTable;
+        return this.nodeTable;
     }
 
     public void setNodeTable(List<HanaNodeTableRow> nodeTable) {
@@ -254,10 +295,12 @@ public class HanaGraphWorkspace{
     }
 
     public void addNodeAttributeCol(HanaColumnInfo newCol) {
+        this.isEdgeOnlyGraph = false;
         this.nodeFields.put(newCol.name, newCol);
     }
 
     public void addNodeKeyCol(HanaColumnInfo newCol) {
+        this.isEdgeOnlyGraph = false;
         this.nodeKeyColName = newCol.name;
         this.nodeFields.put(newCol.name, newCol);
     }
