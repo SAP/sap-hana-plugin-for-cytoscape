@@ -31,6 +31,6 @@ public class HanaUtils {
         if (buildStr==null){
             return false;
         }
-        return buildStr.contains("/CE");
+        return buildStr.contains("CE");
     }
 }
