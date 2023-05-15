@@ -6,7 +6,7 @@
 The SAP HANA plug-in for Cytoscape is an app to connect Cytoscape to [SAP HANA Graph](https://help.sap.com/viewer/11afa2e60a5f4192a381df30f94863f9/2021_2_QRC/en-US/30d1d8cfd5d0470dbaac2ebe20cefb8f.html). The current version delivers a basic integration for interacting with Graph Workspaces on SAP HANA.
 
 ## Requirements
-The plugin is tested to work with [Cytoscape 3.9.0](https://cytoscape.org/), [SapMachine 11](https://sap.github.io/SapMachine/) and the latest [NGDBC Driver](https://tools.hana.ondemand.com/#hanatools).
+The plugin is tested to work with [Cytoscape 3.10.0](https://cytoscape.org/), [SapMachine 17](https://sap.github.io/SapMachine/) and the latest [NGDBC Driver](https://tools.hana.ondemand.com/#hanatools).
 
 ![](doc/img/cover_image.png)
 
