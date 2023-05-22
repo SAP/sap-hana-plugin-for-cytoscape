@@ -19,7 +19,7 @@ jobs:
     - name: Delete Package Versions
       uses: actions/delete-package-versions@v4
       with:
-        package-name: org.sap.sap-hana-plugin-for-cytoscape
+        package-name: 'org.sap.sap-hana-plugin-for-cytoscape'
 
     - uses: actions/checkout@v3
     - name: Set up JDK 17
