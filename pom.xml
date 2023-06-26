@@ -10,19 +10,24 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <bundle.symbolicName>org.sap.cytoscape</bundle.symbolicName>
         <bundle.namespace>org.sap.cytoscape.internal</bundle.namespace>
 
-        <maven-bundle-plugin.version>5.1.2</maven-bundle-plugin.version>
+        <maven-bundle-plugin.version>5.1.8</maven-bundle-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 
         <junit.version>4.13.2</junit.version>
 
-        <cytoscape.api.version>3.8.1</cytoscape.api.version>
-        <osgi.api.version>4.2.0</osgi.api.version>
-        <pax.logging.version>1.11.9</pax.logging.version>
+        <cytoscape.api.version>3.10.0</cytoscape.api.version>
+        <osgi.api.version>7.0.0</osgi.api.version>
+        <pax.logging.version>1.11.17</pax.logging.version>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <ngdbc.version>2.9.16</ngdbc.version>
     </properties>
 
     <repositories>
@@ -48,6 +53,13 @@
             <name>Cytoscape Releases</name>
             <url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
         </repository>
+        <repository>
+            <id>apache_maven2</id>
+            <url>https://repo1.maven.org/maven2/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
     </repositories>
 
     <build>
@@ -56,10 +68,10 @@
                 <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>17</source>
+                    <target>17</target>
                     <optimize>true</optimize>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
@@ -90,33 +102,9 @@
     <dependencies>
         <dependency>
             <groupId>org.cytoscape</groupId>
-            <artifactId>application-api</artifactId>
+            <artifactId>api-bundle</artifactId>
             <version>${cytoscape.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>work-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>service-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>session-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>swing-app-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>command-executor-impl</artifactId>
-            <version>${cytoscape.api.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
@@ -130,7 +118,7 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <version>${osgi.api.version}</version>
         </dependency>
         <dependency>
@@ -141,7 +129,7 @@
         <dependency>
             <groupId>com.sap.cloud.db.jdbc</groupId>
             <artifactId>ngdbc</artifactId>
-            <version>2.9.16</version>
+            <version>${ngdbc.version}</version>
         </dependency>
     </dependencies>
 
