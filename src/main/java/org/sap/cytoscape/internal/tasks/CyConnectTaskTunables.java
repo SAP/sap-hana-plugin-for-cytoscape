@@ -5,11 +5,9 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.sap.cytoscape.internal.hdb.HanaConnectionCredentials;
 import org.sap.cytoscape.internal.hdb.ProxyConnectionCredentials;
-import org.sap.cytoscape.internal.tunables.PasswordString;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 public class CyConnectTaskTunables {
@@ -48,8 +46,8 @@ public class CyConnectTaskTunables {
     /**
      * User password
      */
-    @Tunable(description="Password", groups={"User Credentials"}, required = true, gravity = 40)
-    public PasswordString password;
+    @Tunable(description="Password", groups={"User Credentials"}, required = true, gravity = 40, params="password=true")
+    public String password;
 
     /**
      * Determines if proxy configuration shall be used
@@ -84,8 +82,8 @@ public class CyConnectTaskTunables {
     /**
      * Password for proxy
      */
-    @Tunable(description="Password", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 120, params="displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
-    public PasswordString proxyPassword;
+    @Tunable(description="Password", groups={"SAP HANA Database", "Proxy Configuration"}, gravity = 120, params="password=true;displayState=collapsed", dependsOn = "enableProxyConfiguration=true")
+    public String proxyPassword;
 
     /**
      * Checkbox if password shall be stored in an unsecure way
@@ -111,7 +109,7 @@ public class CyConnectTaskTunables {
             this.port = props.getProperty("hdb.port");
             this.advancedProperties = props.getProperty("hdb.advancedproperties");
             this.username = props.getProperty("hdb.username");
-            this.password = new PasswordString(props.getProperty("hdb.password"));
+            this.password = props.getProperty("hdb.password");
 
             this.enableProxyConfiguration = Boolean.parseBoolean(props.getProperty("hdb.proxy.enabled", "false"));
             if(props.getProperty("hdb.proxy.type") != null){
@@ -120,11 +118,11 @@ public class CyConnectTaskTunables {
             this.proxyHost = props.getProperty("hdb.proxy.host");
             this.proxyPort = props.getProperty("hdb.proxy.port");
             this.proxyUsername = props.getProperty("hdb.proxy.username");
-            this.proxyPassword = new PasswordString(props.getProperty("hdb.proxy.password"));
+            this.proxyPassword = props.getProperty("hdb.proxy.password");
 
             // assume that the user still wants to store the password, if this
             // has been done before
-            this.savePassword = this.password.getPassword().length() > 0 || (this.enableProxyConfiguration == true && this.proxyPassword.getPassword().length() > 0);
+            this.savePassword = this.password.length() > 0 || (this.enableProxyConfiguration == true && this.proxyPassword.length() > 0);
             this.autoConnect = Boolean.parseBoolean(props.getProperty("hdb.autoconnect"));
 
         }catch (IOException e){
@@ -145,7 +143,7 @@ public class CyConnectTaskTunables {
                     this.proxyHost,
                     this.proxyPort,
                     this.proxyUsername,
-                    this.proxyPassword.getPassword()
+                    this.proxyPassword
             );
         }
 
@@ -153,7 +151,7 @@ public class CyConnectTaskTunables {
                 this.host,
                 this.port,
                 this.username,
-                this.password.getPassword(),
+                this.password,
                 this.advancedProperties,
                 proxyConnectionCredentials
         );
@@ -178,8 +176,8 @@ public class CyConnectTaskTunables {
         credProps.setProperty("hdb.proxy.username", this.proxyUsername);
 
         if (savePassword) {
-            credProps.setProperty("hdb.password", this.password.getPassword());
-            credProps.setProperty("hdb.proxy.password", this.proxyPassword.getPassword());
+            credProps.setProperty("hdb.password", this.password);
+            credProps.setProperty("hdb.proxy.password", this.proxyPassword);
         } else {
             // overwrite previously saved passwords
             credProps.setProperty("hdb.password", "");

@@ -10,8 +10,6 @@ import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.sap.cytoscape.internal.tasks.CyCreateWorkspaceTaskFactory;
 import org.sap.cytoscape.internal.tasks.CyLoadTaskFactory;
 import org.sap.cytoscape.internal.tasks.CyRefreshTaskFactory;
-import org.sap.cytoscape.internal.tunables.PasswordString;
-import org.sap.cytoscape.internal.tunables.PasswordStringGUIHandler;
 import org.sap.cytoscape.internal.utils.IOUtils;
 import org.osgi.framework.BundleContext;
 import org.sap.cytoscape.internal.hdb.HanaConnectionManager;
@@ -33,11 +31,6 @@ public class CyActivator extends AbstractCyActivator {
         // fetch api stuff
         CyNetworkFactory networkFactory = getService(bc, CyNetworkFactory.class);
         CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
-
-        // register custom password tunable
-        SimpleGUITunableHandlerFactory<PasswordStringGUIHandler> passwordHandlerFactory = new SimpleGUITunableHandlerFactory<>(
-                PasswordStringGUIHandler.class, PasswordString.class);
-        registerService(bc, passwordHandlerFactory, GUITunableHandlerFactory.class);
 
         try {
             HanaConnectionManager connectionManager = new HanaConnectionManager();
