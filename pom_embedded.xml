@@ -10,22 +10,24 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <bundle.symbolicName>org.sap.cytoscape</bundle.symbolicName>
         <bundle.namespace>org.sap.cytoscape.internal</bundle.namespace>
 
-        <maven-bundle-plugin.version>5.1.2</maven-bundle-plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-bundle-plugin.version>5.1.9</maven-bundle-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 
         <junit.version>4.13.2</junit.version>
 
-        <cytoscape.api.version>3.8.1</cytoscape.api.version>
-        <osgi.api.version>6.0.0</osgi.api.version>
-        <pax.logging.version>1.11.9</pax.logging.version>
+        <cytoscape.api.version>3.10.0</cytoscape.api.version>
+        <osgi.api.version>7.0.0</osgi.api.version>
+        <pax.logging.version>1.11.17</pax.logging.version>
 
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
-        <ngdbc.version>2.9.16</ngdbc.version>
+        <ngdbc.version>2.17.7</ngdbc.version>
     </properties>
 
     <repositories>
@@ -51,18 +53,13 @@
             <name>Cytoscape Releases</name>
             <url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
         </repository>
-        <!--repository>
-            <id>apache-repo-releases</id>
-            <url>https://repository.apache.org/content/repositories/</url>
+        <repository>
+            <id>apache_maven2</id>
+            <url>https://repo1.maven.org/maven2/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
         </repository>
-        <repository>
-            <id>apache_maven2</id>
-            <url>http://repo.maven.apache.org/maven2/</url>
-            <releases><enabled>true</enabled></releases>
-        </repository-->
     </repositories>
 
     <build>
@@ -70,7 +67,7 @@
             <!--plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -85,8 +82,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <optimize>true</optimize>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
@@ -103,6 +100,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <multi-release>true</multi-release>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>!${bundle.namespace}.*</Export-Package>
@@ -111,7 +109,7 @@
                         <Embed-Dependency>*;scope=!provided</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-StripVersion>true</Embed-StripVersion>
-                        <!--Embed-Directory>lib</Embed-Directory-->
+                        <Embed-Directory>lib</Embed-Directory>
                         <Import-Package>*;resolution:=optional</Import-Package>
                     </instructions>
                 </configuration>
@@ -122,37 +120,7 @@
     <dependencies>
         <dependency>
             <groupId>org.cytoscape</groupId>
-            <artifactId>application-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>work-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>service-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>session-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>swing-app-api</artifactId>
-            <version>${cytoscape.api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.cytoscape</groupId>
-            <artifactId>command-executor-impl</artifactId>
+            <artifactId>api-bundle</artifactId>
             <version>${cytoscape.api.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -170,7 +138,7 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <artifactId>osgi.core</artifactId>
             <version>${osgi.api.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -195,6 +163,5 @@
             <url>https://maven.pkg.github.com/SAP/sap-hana-plugin-for-cytoscape</url>
         </repository>
     </distributionManagement>
-
 
 </project>
