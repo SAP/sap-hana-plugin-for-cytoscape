@@ -13,6 +13,11 @@ import java.util.Properties;
 public class CyConnectTaskTunables {
     /**
      *
+     */
+    private static final String KEY_HDB_ISHANACLOUD = "hdb.ishanacloud";
+
+    /**
+     *
      * @return Title of the input parameter dialog
      */
     @ProvidesTitle
@@ -29,6 +34,14 @@ public class CyConnectTaskTunables {
      */
     @Tunable(description="Port", groups={"SAP HANA Database"}, required = true, gravity = 20)
     public String port;
+
+    /**
+     * Determines if the HANA instance is to be considere a HANA Cloud (regardless
+     * of the content of the build_branch value that the host returns)
+     */
+    @Tunable(description = "Hana Cloud", groups = {
+            "SAP HANA Database" }, gravity = 24, tooltip = "If not checked there will be an automatic check whether it's a HANA Cloud or HANA On-prem.")
+    public boolean isHanaCloud = false;
 
     /**
      * Specifies advanced option to pass as part of the connection string. This is supposed
@@ -110,6 +123,7 @@ public class CyConnectTaskTunables {
             this.advancedProperties = props.getProperty("hdb.advancedproperties");
             this.username = props.getProperty("hdb.username");
             this.password = props.getProperty("hdb.password");
+            this.isHanaCloud = Boolean.parseBoolean(props.getProperty(KEY_HDB_ISHANACLOUD, "false"));
 
             this.enableProxyConfiguration = Boolean.parseBoolean(props.getProperty("hdb.proxy.enabled", "false"));
             if(props.getProperty("hdb.proxy.type") != null){
@@ -152,6 +166,7 @@ public class CyConnectTaskTunables {
                 this.port,
                 this.username,
                 this.password,
+                this.isHanaCloud,
                 this.advancedProperties,
                 proxyConnectionCredentials
         );
@@ -168,6 +183,7 @@ public class CyConnectTaskTunables {
         credProps.setProperty("hdb.advancedproperties", this.advancedProperties);
         credProps.setProperty("hdb.port", this.port);
         credProps.setProperty("hdb.username", this.username);
+        credProps.setProperty(KEY_HDB_ISHANACLOUD, String.valueOf(this.isHanaCloud));
 
         credProps.setProperty("hdb.proxy.enabled", String.valueOf(this.enableProxyConfiguration));
         credProps.setProperty("hdb.proxy.type", this.proxyType.getSelectedValue());
