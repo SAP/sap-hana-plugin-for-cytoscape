@@ -26,6 +26,7 @@ public class HanaConnectionManagerTest {
                     connectProps.getProperty("port"),
                     connectProps.getProperty("username"),
                     connectProps.getProperty("password"),
+                    Boolean.valueOf(connectProps.getProperty("isHanaCloud", "false")),
                     null,
                     null
             );

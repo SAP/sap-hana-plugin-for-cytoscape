@@ -35,6 +35,7 @@ public class HanaConnectionManager {
      * HANA on prem: fa/hana2sp05
      */
     private String buildVersion;
+    private boolean isHanaCloud;
 
     /**
      * Default constructor
@@ -62,6 +63,16 @@ public class HanaConnectionManager {
                 this.buildVersion = this.executeQuerySingleValue(this.sqlStrings.getProperty("GET_BUILD"), null, String.class);
             }
 
+            // If the connection is not flagged as being a HANA Cloud connection, the
+            // build version will be used to determine whether we are dealing with a
+            // HANA Cloud or a HANA on-premise. Sometimes the buildVersion is empty so
+            // that the automatic switch does not work and that's why the option via
+            // the connection properties is offered as well.
+            this.isHanaCloud = Boolean.valueOf(connectionProperties.getProperty("isHanaCloud", "false"));
+            if (!this.isHanaCloud) {
+                this.isHanaCloud = isCloudEdition(this.buildVersion);
+            }
+
             info("Connected to HANA database: "+host+" ("+this.buildVersion+")");
         } catch (SQLException e) {
             err("Error connecting to HANA instance:"+host);
@@ -82,6 +93,7 @@ public class HanaConnectionManager {
         connectionProperties.setProperty("user", cred.username);
         connectionProperties.setProperty("password", cred.password);
         connectionProperties.setProperty("useProxy", "false");
+        connectionProperties.setProperty("isHanaCloud", String.valueOf(cred.isHanaCloud));
 
         connectionProperties.putAll(cred.generateAdvancedProperties());
 
@@ -300,7 +312,7 @@ public class HanaConnectionManager {
     private void loadWorkspaceMetadata(HanaGraphWorkspace graphWorkspace) throws SQLException, HanaConnectionManagerException {
 
         String propName="LOAD_WORKSPACE_METADATA_HANA_" +
-                (isCloudEdition(this.buildVersion)? "CLOUD":"ONPREM");
+                (this.isHanaCloud ? "CLOUD" : "ONPREM");
 
         debug("Reading graph metadata with "+propName);
         HanaQueryResult wsMetadata = this.executeQueryList(

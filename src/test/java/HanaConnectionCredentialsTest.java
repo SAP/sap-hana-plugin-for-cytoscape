@@ -80,4 +80,15 @@ public class HanaConnectionCredentialsTest {
 
     }
 
+    @Test
+    public void testHanaCloudPropertyDefaultValue() {
+        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
+        Assert.assertFalse(cred.isHanaCloud);
+    }
+
+    @Test
+    public void testHanaCloudPropertyInConstructor() {
+        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, true, null, null);
+        Assert.assertTrue(cred.isHanaCloud);
+    }
 }

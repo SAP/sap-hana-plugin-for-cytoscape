@@ -11,6 +11,8 @@ public class HanaConnectionCredentials extends AbstractConnectionCredentials {
 
     public String advancedProperties;
 
+    public boolean isHanaCloud;
+
     public ProxyConnectionCredentials proxyConnectionCredentials;
 
     /**
@@ -24,7 +26,27 @@ public class HanaConnectionCredentials extends AbstractConnectionCredentials {
      * @param proxyConnectionCredentials    Proxy details. Leave NULL if no proxy used.
      */
     public HanaConnectionCredentials(String host, String port, String username, String password, String advancedProperties, ProxyConnectionCredentials proxyConnectionCredentials) {
+        this(host, port, username, password, false, advancedProperties, proxyConnectionCredentials);
+    }
+
+    /**
+     * Construct database connection credentials
+     *
+     * @param host                       Hostname
+     * @param port                       Port
+     * @param username                   Database User
+     * @param password                   Database User Password
+     * @param isHanaCloud                If set to true the HANA instance is
+     *                                   considered to be a HANA Cloud instance, if
+     *                                   false it will be determined during
+     *                                   connection.
+     * @param advancedProperties         Advanced JDBC Properties
+     * @param proxyConnectionCredentials Proxy details. Leave NULL if no proxy used.
+     */
+    public HanaConnectionCredentials(String host, String port, String username, String password, boolean isHanaCloud,
+            String advancedProperties, ProxyConnectionCredentials proxyConnectionCredentials) {
         super(host, port, username, password);
+        this.isHanaCloud = isHanaCloud;
         this.advancedProperties = advancedProperties;
         this.proxyConnectionCredentials = proxyConnectionCredentials;
     }
