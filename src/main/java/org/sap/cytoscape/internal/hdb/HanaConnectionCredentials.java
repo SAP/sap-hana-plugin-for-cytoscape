@@ -18,20 +18,6 @@ public class HanaConnectionCredentials extends AbstractConnectionCredentials {
     /**
      * Construct database connection credentials
      *
-     * @param host  Hostname
-     * @param port  Port
-     * @param username  Database User
-     * @param password  Database User Password
-     * @param advancedProperties Advanced JDBC Properties
-     * @param proxyConnectionCredentials    Proxy details. Leave NULL if no proxy used.
-     */
-    public HanaConnectionCredentials(String host, String port, String username, String password, String advancedProperties, ProxyConnectionCredentials proxyConnectionCredentials) {
-        this(host, port, username, password, false, advancedProperties, proxyConnectionCredentials);
-    }
-
-    /**
-     * Construct database connection credentials
-     *
      * @param host                       Hostname
      * @param port                       Port
      * @param username                   Database User

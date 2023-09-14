@@ -11,7 +11,7 @@ public class HanaConnectionCredentialsTest {
 
     @Test
     public void testGenerateAdvancedProperties(){
-        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
+        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, false, null, null);
         Properties props = null;
 
         try{
@@ -78,12 +78,6 @@ public class HanaConnectionCredentialsTest {
             fail();
         }
 
-    }
-
-    @Test
-    public void testHanaCloudPropertyDefaultValue() {
-        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
-        Assert.assertFalse(cred.isHanaCloud);
     }
 
     @Test
