@@ -299,17 +299,41 @@ public class HanaConnectionManager {
      */
     private void loadWorkspaceMetadata(HanaGraphWorkspace graphWorkspace) throws SQLException, HanaConnectionManagerException {
 
-        String propName="LOAD_WORKSPACE_METADATA_HANA_" +
-                (isCloudEdition(this.buildVersion)? "CLOUD":"ONPREM");
+        Boolean isCloud = isCloudEdition(this.buildVersion);
+        String propName="LOAD_WORKSPACE_METADATA_HANA_" + (isCloud ? "CLOUD":"ONPREM");
 
-        debug("Reading graph metadata with "+propName);
-        HanaQueryResult wsMetadata = this.executeQueryList(
+        debug("Reading graph metadata with " + propName);
+        HanaQueryResult wsMetadata = null;
+
+        try{
+            wsMetadata = this.executeQueryList(
                     this.sqlStrings.getProperty(propName),
                     new HanaSqlParameter[]{
                             new HanaSqlParameter(graphWorkspace.getWorkspaceDbObject().schema, Types.VARCHAR),
                             new HanaSqlParameter(graphWorkspace.getWorkspaceDbObject().name, Types.VARCHAR)
                     }
             );
+        } catch (Exception e) {
+            // some rare systems (pre-releases!?) do not return build strings. To act more resilient in those cases,
+            // we try both workspace structures and only fail if the graph could not be loaded with both available
+            // approaches.
+
+            // Show warning to notify user:
+            warn("Could not load graph workspace after assuming " + (isCloud ? "Cloud" : "On-Premise") + " Edition of SAP HANA.");
+            warn("Re-trying operation with " + (isCloud ? "On-Premise" : "Cloud") + " Edition.");
+
+            // Swap on-prem to cloud and vice versa:
+            propName="LOAD_WORKSPACE_METADATA_HANA_" + (isCloud ? "ONPREM":"CLOUD");
+
+            // Try again:
+            wsMetadata = this.executeQueryList(
+                    this.sqlStrings.getProperty(propName),
+                    new HanaSqlParameter[]{
+                            new HanaSqlParameter(graphWorkspace.getWorkspaceDbObject().schema, Types.VARCHAR),
+                            new HanaSqlParameter(graphWorkspace.getWorkspaceDbObject().name, Types.VARCHAR)
+                    }
+            );
+        }
         
         for(Object[] row : wsMetadata.getRecordList()){
             // Types will be set when retrieving actual data
