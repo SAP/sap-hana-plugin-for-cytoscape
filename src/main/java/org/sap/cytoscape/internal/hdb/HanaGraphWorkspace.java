@@ -32,9 +32,9 @@ public class HanaGraphWorkspace{
 
     private String edgeTargetColName;
 
-    private Map<String, HanaColumnInfo> edgeFields;
+    private LinkedHashMap<String, HanaColumnInfo> edgeFields;
 
-    private Map<String, HanaColumnInfo> nodeFields;
+    private LinkedHashMap<String, HanaColumnInfo> nodeFields;
 
     private boolean isEdgeOnlyGraph;
 
@@ -62,8 +62,8 @@ public class HanaGraphWorkspace{
      * Constructs empty HanaGraphWorkspace
      */
     public HanaGraphWorkspace(){
-        this.edgeFields = new HashMap<>();
-        this.nodeFields = new HashMap<>();
+        this.edgeFields = new LinkedHashMap<>();
+        this.nodeFields = new LinkedHashMap<>();
         this.nodeTable = new ArrayList<>();
         this.edgeTable = new ArrayList<>();
         this.isEdgeOnlyGraph = true;

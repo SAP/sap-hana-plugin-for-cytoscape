@@ -4,6 +4,7 @@ import org.sap.cytoscape.internal.exceptions.GraphInconsistencyException;
 import org.sap.cytoscape.internal.hdb.*;
 
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -102,6 +103,23 @@ public class HanaGraphWorkspaceTest {
 
         ws.inferNodesFromEdges();
         Assert.assertEquals(2, ws.getNodeTable().size());
+    }
+
+    // -------------------------------------------------------------------------
+    // getNodeFieldList insertion order
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testGetNodeFieldList_preservesInsertionOrder() {
+        HanaGraphWorkspace ws = new HanaGraphWorkspace(new HanaDbObject("S", "W"));
+        ws.addNodeKeyCol(new HanaColumnInfo("S", "T", "FIRST", Types.INTEGER, true));
+        ws.addNodeAttributeCol(new HanaColumnInfo("S", "T", "SECOND", Types.NVARCHAR));
+        ws.addNodeAttributeCol(new HanaColumnInfo("S", "T", "THIRD", Types.DOUBLE));
+
+        ArrayList<HanaColumnInfo> fields = ws.getNodeFieldList();
+        Assert.assertEquals("FIRST",  fields.get(0).name);
+        Assert.assertEquals("SECOND", fields.get(1).name);
+        Assert.assertEquals("THIRD",  fields.get(2).name);
     }
 
     // -------------------------------------------------------------------------
