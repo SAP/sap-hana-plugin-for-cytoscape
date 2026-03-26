@@ -75,4 +75,36 @@ public class HanaConnectionManagerUnitTest {
         injectConnection(manager, throwingConnection);
         Assert.assertFalse(manager.isConnected());
     }
+
+    /**
+     * Regression test: disconnect() must call close() on the underlying connection
+     * and leave isConnected() returning false.
+     */
+    @Test
+    public void testDisconnect_closesConnection() throws Exception {
+        HanaConnectionManager manager = newManager();
+        boolean[] closed = {false};
+        Connection conn = (Connection) Proxy.newProxyInstance(
+            ClassLoader.getSystemClassLoader(),
+            new Class[]{Connection.class},
+            (proxy, method, args) -> {
+                switch (method.getName()) {
+                    case "close":   closed[0] = true; return null;
+                    case "isValid": return true;
+                    default:        return null;
+                }
+            }
+        );
+        injectConnection(manager, conn);
+        manager.disconnect();
+        Assert.assertTrue("close() should have been called on the connection", closed[0]);
+        Assert.assertFalse("isConnected() should be false after disconnect", manager.isConnected());
+    }
+
+    @Test
+    public void testDisconnect_nullSafe() throws Exception {
+        HanaConnectionManager manager = newManager(); // connection == null
+        manager.disconnect(); // must not throw
+        Assert.assertFalse(manager.isConnected());
+    }
 }
