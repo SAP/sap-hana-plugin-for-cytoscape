@@ -1,7 +1,7 @@
 package org.sap.cytoscape.internal.hdb;
 
 import org.cytoscape.model.*;
-import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
+import org.sap.cytoscape.internal.exceptions.GraphInconsistencyException;
 
 import java.sql.Types;
 import java.util.*;
@@ -163,10 +163,10 @@ public class HanaGraphWorkspace{
         }
     }
 
-    public void inferNodesFromEdges() throws GraphIncosistencyException {
+    public void inferNodesFromEdges() throws GraphInconsistencyException {
 
         if(!this.isEdgeOnlyGraph) {
-            throw new GraphIncosistencyException("Cannot infer nodes from edges for non edge-only graphs");
+            throw new GraphInconsistencyException("Cannot infer nodes from edges for non edge-only graphs");
         }
 
         this.nodeKeyColName = "NodeID";

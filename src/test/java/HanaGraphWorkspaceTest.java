@@ -1,6 +1,6 @@
 import org.junit.Assert;
 import org.junit.Test;
-import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
+import org.sap.cytoscape.internal.exceptions.GraphInconsistencyException;
 import org.sap.cytoscape.internal.hdb.*;
 
 import java.sql.Types;
@@ -64,8 +64,8 @@ public class HanaGraphWorkspaceTest {
     // inferNodesFromEdges
     // -------------------------------------------------------------------------
 
-    @Test(expected = GraphIncosistencyException.class)
-    public void testInferNodesFromEdges_throwsForNonEdgeOnlyGraph() throws GraphIncosistencyException {
+    @Test(expected = GraphInconsistencyException.class)
+    public void testInferNodesFromEdges_throwsForNonEdgeOnlyGraph() throws GraphInconsistencyException {
         HanaGraphWorkspace ws = new HanaGraphWorkspace(new HanaDbObject("SCHEMA", "WS"));
         // addNodeKeyCol sets isEdgeOnlyGraph = false
         ws.addNodeKeyCol(new HanaColumnInfo("SCHEMA", "NODE_T", "NODE_ID", Types.INTEGER, true));
@@ -73,7 +73,7 @@ public class HanaGraphWorkspaceTest {
     }
 
     @Test
-    public void testInferNodesFromEdges_deduplicates() throws GraphIncosistencyException {
+    public void testInferNodesFromEdges_deduplicates() throws GraphInconsistencyException {
         HanaGraphWorkspace ws = new HanaGraphWorkspace(new HanaDbObject("SCHEMA", "WS"));
         ws.addEdgeKeyCol(new HanaColumnInfo("SCHEMA", "EDGE_T", "EDGE_ID", Types.INTEGER, true));
         ws.addEdgeSourceCol(new HanaColumnInfo("SCHEMA", "EDGE_T", "SRC", Types.NVARCHAR, false));
@@ -92,7 +92,7 @@ public class HanaGraphWorkspaceTest {
     }
 
     @Test
-    public void testInferNodesFromEdges_singleEdge() throws GraphIncosistencyException {
+    public void testInferNodesFromEdges_singleEdge() throws GraphInconsistencyException {
         HanaGraphWorkspace ws = new HanaGraphWorkspace(new HanaDbObject("SCHEMA", "WS"));
         ws.addEdgeKeyCol(new HanaColumnInfo("SCHEMA", "EDGE_T", "EDGE_ID", Types.INTEGER, true));
         ws.addEdgeSourceCol(new HanaColumnInfo("SCHEMA", "EDGE_T", "SRC", Types.NVARCHAR, false));

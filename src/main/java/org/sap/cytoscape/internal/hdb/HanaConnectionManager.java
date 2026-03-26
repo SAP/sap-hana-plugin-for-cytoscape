@@ -1,6 +1,6 @@
 package org.sap.cytoscape.internal.hdb;
 
-import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
+import org.sap.cytoscape.internal.exceptions.GraphInconsistencyException;
 import org.sap.cytoscape.internal.exceptions.HanaConnectionManagerException;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
@@ -467,7 +467,7 @@ public class HanaConnectionManager {
      * @param graphWorkspaceName    Name of the workspace to be loaded
      * @return                      HanaGraphWorkspace Object
      */
-    public HanaGraphWorkspace loadGraphWorkspace(String schema, String graphWorkspaceName) throws SQLException, HanaConnectionManagerException, GraphIncosistencyException {
+    public HanaGraphWorkspace loadGraphWorkspace(String schema, String graphWorkspaceName) throws SQLException, HanaConnectionManagerException, GraphInconsistencyException {
 
         HanaGraphWorkspace graphWorkspace =
                 new HanaGraphWorkspace(new HanaDbObject(schema, graphWorkspaceName));
@@ -490,7 +490,7 @@ public class HanaConnectionManager {
      * @param graphWorkspace    Schema and Name of the workspace to be loaded
      * @return                  HanaGraphWorkspace Object
      */
-    public HanaGraphWorkspace loadGraphWorkspace(HanaDbObject graphWorkspace) throws SQLException, HanaConnectionManagerException, GraphIncosistencyException {
+    public HanaGraphWorkspace loadGraphWorkspace(HanaDbObject graphWorkspace) throws SQLException, HanaConnectionManagerException, GraphInconsistencyException {
         return loadGraphWorkspace(graphWorkspace.schema, graphWorkspace.name);
     }
 

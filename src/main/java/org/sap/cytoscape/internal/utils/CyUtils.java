@@ -1,7 +1,7 @@
 package org.sap.cytoscape.internal.utils;
 
 import org.cytoscape.model.*;
-import org.sap.cytoscape.internal.exceptions.GraphIncosistencyException;
+import org.sap.cytoscape.internal.exceptions.GraphInconsistencyException;
 import org.sap.cytoscape.internal.hdb.*;
 
 import java.util.HashMap;
@@ -111,15 +111,15 @@ public class CyUtils {
      * @param nodesByHanaKey
      * @return
      */
-    public static CyEdge addNewEdgeToNetwork(CyNetwork network, HanaGraphWorkspace graphWorkspace, HanaEdgeTableRow row, HashMap<String, CyNode> nodesByHanaKey) throws GraphIncosistencyException {
+    public static CyEdge addNewEdgeToNetwork(CyNetwork network, HanaGraphWorkspace graphWorkspace, HanaEdgeTableRow row, HashMap<String, CyNode> nodesByHanaKey) throws GraphInconsistencyException {
         CyNode sourceNode = nodesByHanaKey.get(row.getSourceValue(String.class));
         if (sourceNode == null) {
             err("Source node with id " + row.getSourceValue(String.class) + " is not existing.");
-            throw new GraphIncosistencyException("Source node with id " + row.getSourceValue(String.class) + " is not existing.");
+            throw new GraphInconsistencyException("Source node with id " + row.getSourceValue(String.class) + " is not existing.");
         }
         CyNode targetNode = nodesByHanaKey.get(row.getTargetValue(String.class));
         if (targetNode == null) {
-            throw new GraphIncosistencyException("Target node with id " + row.getTargetValue(String.class) + " is not existing.");
+            throw new GraphInconsistencyException("Target node with id " + row.getTargetValue(String.class) + " is not existing.");
         }
 
         CyEdge newEdge = network.addEdge(sourceNode, targetNode, true);

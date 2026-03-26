@@ -15,3 +15,4 @@ src/main/resources/testcredentials.properties
 local/
 src/test/resources/testcredentials.properties
 /.vscode
+CLAUDE.md
