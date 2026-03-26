@@ -56,6 +56,7 @@ public class HanaConnectionManager {
         this.connection = null;
 
         try {
+            Class.forName("com.sap.db.jdbc.Driver");
             this.connection = DriverManager.getConnection("jdbc:sap://" + host + ":" + port + "/", connectionProperties);
 
             if (this.connection.isValid(1500)){
@@ -63,6 +64,9 @@ public class HanaConnectionManager {
             }
 
             info("Connected to HANA database: "+host+" ("+this.buildVersion+")");
+        } catch (ClassNotFoundException e) {
+            err("HANA JDBC driver not found: " + e.getMessage());
+            throw new SQLException("HANA JDBC driver (ngdbc) not found on classpath", e);
         } catch (SQLException e) {
             err("Error connecting to HANA instance:"+host);
             err(e.toString());

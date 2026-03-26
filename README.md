@@ -24,13 +24,7 @@ The latest (bleeding edge) package can be downloaded in the [packages section](h
 ![Where to download latest cyHANA jar](doc/img/download_package.png)
 
 ### Setup
-After getting the latest JAR package, you can install the plugin using the [Cytoscape App Manager](http://manual.cytoscape.org/en/stable/App_Manager.html). 
-
-The plugin makes use of the SAP HANA JDBC client, which additionally needs to be included on the classpath. The latest version can be retrieved from the [SAP Development Tools](https://tools.hana.ondemand.com/#hanatools) (look for [ngdcb-latest.jar](https://tools.hana.ondemand.com/additional/ngdbc-latest.jar)).
-
-On a Mac, you can copy `ngdbc-latest.jar` to `/Applications/Cytoscape_vX.X.X/framework/lib/openjfx/mac`. A similar folder exists on Windows machines within the Cytoscape installation.
-
-After installation, you should be able to find the plugin under `Apps` > `SAP HANA`.
+After getting the latest JAR package, you can install the plugin using the [Cytoscape App Manager](http://manual.cytoscape.org/en/stable/App_Manager.html). After installation, you should be able to find the plugin under `Apps` > `SAP HANA`.
 
 ![The Apps menu with installed cyHANA plugin](doc/img/apps_menu.png)
 

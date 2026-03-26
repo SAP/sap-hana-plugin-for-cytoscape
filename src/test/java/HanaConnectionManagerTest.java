@@ -7,6 +7,7 @@ import org.sap.cytoscape.internal.hdb.*;
 import org.sap.cytoscape.internal.utils.IOUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
@@ -344,6 +345,137 @@ public class HanaConnectionManagerTest {
         Assert.assertTrue(sspWorkspace.isMetadataComplete());
         Assert.assertEquals(6, sspWorkspace.getEdgeTable().size());
         Assert.assertEquals(4, sspWorkspace.getNodeTable().size());
+    }
+
+    @Test
+    public void testIsConnected_falseBeforeConnect() throws IOException {
+        HanaConnectionManager freshManager = new HanaConnectionManager();
+        Assert.assertFalse("A freshly created manager must not report as connected", freshManager.isConnected());
+    }
+
+    @Test
+    public void testGetInstanceIdentifier_nonEmptyAfterConnect() {
+        try {
+            String identifier = connectionManager.getInstanceIdentifier();
+            Assert.assertNotNull("getInstanceIdentifier must not return null", identifier);
+            Assert.assertTrue("getInstanceIdentifier must return a non-empty string", identifier.length() > 0);
+        } catch (SQLException e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testLoadGraphWorkspaceByDbObject() {
+        HanaGraphWorkspace ws = null;
+        try {
+            ws = connectionManager.loadGraphWorkspace(new HanaDbObject(testSchema, "SSP"));
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+        Assert.assertNotNull(ws);
+        Assert.assertTrue(ws.isMetadataComplete());
+        Assert.assertEquals(6, ws.getEdgeTable().size());
+        Assert.assertEquals(4, ws.getNodeTable().size());
+    }
+
+    @Test
+    public void testCreateGraphWorkspace() throws Exception {
+        String nodeTableName = "TEST_CW_NODES";
+        String edgeTableName = "TEST_CW_EDGES";
+        String workspaceName = "TEST_CW_WS";
+
+        HanaDbObject nodeTable = new HanaDbObject(testSchema, nodeTableName);
+        HanaDbObject edgeTable = new HanaDbObject(testSchema, edgeTableName);
+
+        // Create the backing tables
+        connectionManager.createTable(nodeTable, Arrays.asList(
+                new HanaColumnInfo(testSchema, nodeTableName, "NODE_ID", Types.INTEGER, true)
+        ));
+        connectionManager.createTable(edgeTable, Arrays.asList(
+                new HanaColumnInfo(testSchema, edgeTableName, "EDGE_ID", Types.INTEGER, true),
+                new HanaColumnInfo(testSchema, edgeTableName, "SRC",     Types.INTEGER, false, true),
+                new HanaColumnInfo(testSchema, edgeTableName, "TGT",     Types.INTEGER, false, true)
+        ));
+
+        // Build a HanaGraphWorkspace with all required metadata.
+        // nodeTableDbObject and edgeTableDbObject have no setters, so we set them via reflection.
+        HanaGraphWorkspace ws = new HanaGraphWorkspace(new HanaDbObject(testSchema, workspaceName));
+        setField(ws, "nodeTableDbObject", nodeTable);
+        setField(ws, "edgeTableDbObject", edgeTable);
+        ws.addNodeKeyCol(new HanaColumnInfo(testSchema, nodeTableName, "NODE_ID", Types.INTEGER, true));
+        ws.addEdgeKeyCol(new HanaColumnInfo(testSchema, edgeTableName, "EDGE_ID", Types.INTEGER, true));
+        ws.addEdgeSourceCol(new HanaColumnInfo(testSchema, edgeTableName, "SRC", Types.INTEGER, false));
+        ws.addEdgeTargetCol(new HanaColumnInfo(testSchema, edgeTableName, "TGT", Types.INTEGER, false));
+
+        connectionManager.createGraphWorkspace(ws);
+
+        // Verify it appears in the listing
+        boolean found = false;
+        for (HanaDbObject obj : connectionManager.listGraphWorkspaces()) {
+            if (obj.schema.equals(testSchema) && obj.name.equals(workspaceName)) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertTrue("Created workspace must appear in listGraphWorkspaces()", found);
+    }
+
+    /** Reflective field setter for package-private / private fields in HanaGraphWorkspace. */
+    private static void setField(Object target, String fieldName, Object value) throws Exception {
+        Field f = target.getClass().getDeclaredField(fieldName);
+        f.setAccessible(true);
+        f.set(target, value);
+    }
+
+    @Test(expected = SQLException.class)
+    public void testExecuteInvalidSqlThrows() throws SQLException {
+        connectionManager.execute("THIS IS NOT VALID SQL");
+    }
+
+    @Test
+    public void testBulkInsertWithNullValue() {
+        HanaDbObject targetTable = new HanaDbObject(testSchema, "TEST_BULK_NULL_TABLE");
+        List<HanaColumnInfo> cols = Arrays.asList(
+                new HanaColumnInfo(targetTable.schema, targetTable.name, "COL1", Types.NVARCHAR),
+                new HanaColumnInfo(targetTable.schema, targetTable.name, "COL2", Types.NVARCHAR)
+        );
+
+        Map<String, Object> record = new HashMap<>();
+        record.put("COL1", "present");
+        record.put("COL2", null);  // null value — exercises the setNull branch in executeBatch
+
+        try {
+            connectionManager.createTable(targetTable, cols);
+            connectionManager.bulkInsertData(targetTable, cols, Collections.singletonList(record));
+            int count = connectionManager.executeQuerySingleValue(String.format(
+                    sqlStringsTest.getProperty("COUNT_RECORDS"),
+                    targetTable.schema, targetTable.name
+            ), null, Integer.class);
+            Assert.assertEquals(1, count);
+        } catch (SQLException e) {
+            Assert.fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testCreateTableWithPrimaryKey() {
+        String tableName = "TEST_PK_TABLE";
+        HanaDbObject pkTable = new HanaDbObject(testSchema, tableName);
+        List<HanaColumnInfo> cols = Arrays.asList(
+                new HanaColumnInfo(testSchema, tableName, "ID",   Types.INTEGER, true),
+                new HanaColumnInfo(testSchema, tableName, "NAME", Types.NVARCHAR)
+        );
+
+        try {
+            connectionManager.createTable(pkTable, cols);
+            HanaQueryResult result = connectionManager.executeQueryList(String.format(
+                    sqlStringsTest.getProperty("GENERIC_SELECT_PROJECTION"),
+                    "*", testSchema, tableName
+            ));
+            Assert.assertEquals(2, result.getColumnMetadata().length);
+        } catch (SQLException e) {
+            Assert.fail(e.toString());
+        }
     }
 
 }

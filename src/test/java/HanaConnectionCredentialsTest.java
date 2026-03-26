@@ -80,4 +80,38 @@ public class HanaConnectionCredentialsTest {
 
     }
 
+    @Test
+    public void testGenerateAdvancedProperties_emptyValue(){
+        // "key=".split("=") returns ["key"] only — Java drops the trailing empty token.
+        // Accessing index [1] then throws ArrayIndexOutOfBoundsException, which is caught
+        // and rethrown as HanaConnectionManagerException.
+        // This test documents the actual behaviour of the existing code.
+        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
+        try {
+            cred.advancedProperties = "key=";
+            cred.generateAdvancedProperties();
+            fail("Expected HanaConnectionManagerException for entry with empty value");
+        } catch (HanaConnectionManagerException e) {
+            // expected — empty value after '=' is not supported by current implementation
+        } catch (Exception e) {
+            fail("Unexpected exception type: " + e);
+        }
+    }
+
+    @Test
+    public void testGenerateAdvancedProperties_valueContainsEquals(){
+        // Current implementation splits on ALL '=' characters, so 'key=val=ue'
+        // results in key="key", value="val" (the trailing "=ue" is silently dropped).
+        // This test documents the actual behaviour of the existing code.
+        HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
+        try {
+            cred.advancedProperties = "key=val=ue";
+            Properties props = cred.generateAdvancedProperties();
+            Assert.assertEquals(1, props.size());
+            Assert.assertEquals("val", props.getProperty("key"));
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
 }

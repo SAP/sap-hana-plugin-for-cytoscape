@@ -13,3 +13,4 @@ src/main/resources/testcredentials.properties
 .DS_Store
 local/
 src/test/resources/testcredentials.properties
+/.vscode

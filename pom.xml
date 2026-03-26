@@ -15,7 +15,7 @@
         <bundle.symbolicName>org.sap.cytoscape</bundle.symbolicName>
         <bundle.namespace>org.sap.cytoscape.internal</bundle.namespace>
 
-        <maven-bundle-plugin.version>5.1.8</maven-bundle-plugin.version>
+        <maven-bundle-plugin.version>5.1.9</maven-bundle-plugin.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 
         <junit.version>4.13.2</junit.version>
@@ -27,7 +27,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <ngdbc.version>2.9.16</ngdbc.version>
+        <ngdbc.version>2.17.7</ngdbc.version>
     </properties>
 
     <repositories>
@@ -88,12 +88,36 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <multi-release>true</multi-release>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>!${bundle.namespace}.*</Export-Package>
                         <Private-Package>${bundle.namespace}.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <Embed-StripVersion>true</Embed-StripVersion>
+                        <Embed-Directory>lib</Embed-Directory>
+                        <Import-Package>*;resolution:=optional</Import-Package>
                     </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <systemPropertyVariables>
+                        <bundle.jar>${project.build.directory}/${project.build.finalName}.jar</bundle.jar>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
@@ -110,21 +134,25 @@
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
             <version>${pax.logging.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-service</artifactId>
             <version>${pax.logging.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
             <version>${osgi.api.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.sap.cloud.db.jdbc</groupId>
