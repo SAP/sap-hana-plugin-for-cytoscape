@@ -71,7 +71,16 @@ public class CyLoadTask extends AbstractTask {
 
         // retrieve selected graph workspace
         String selectedWorkspaceKey = tunables.workspaceSelection.getSelectedValue();
-        HanaDbObject selectedWorkspace = tunables.graphWorkspaces.get(selectedWorkspaceKey);
+        HanaDbObject selectedWorkspace = tunables.graphWorkspaces == null ? null : tunables.graphWorkspaces.get(selectedWorkspaceKey);
+
+        if(selectedWorkspace == null){
+            taskMonitor.showMessage(
+                    TaskMonitor.Level.ERROR,
+                    "No valid graph workspaces found on this SAP HANA instance. Please create a graph workspace first."
+            );
+            taskMonitor.setProgress(1d);
+            return;
+        }
 
         taskMonitor.setStatusMessage("Downloading data from Graph Workspace " + selectedWorkspaceKey + " in SAP HANA");
 
