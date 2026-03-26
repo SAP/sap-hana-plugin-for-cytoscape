@@ -81,6 +81,97 @@
                     </compilerArguments>
                 </configuration>
             </plugin>
+            <!--
+              ===== FELIX-6396 WORKAROUND — removable when Cytoscape ships OSGi R7 =====
+              https://issues.apache.org/jira/browse/FELIX-6396
+              Pre-OSGi-R7 Felix ignores META-INF/versions/ in multi-release JARs and always loads
+              the Java 8 base class. ngdbc's base Driver throws AssertionError on Java > 8.
+              When Cytoscape ships an OSGi R7-capable Felix (Karaf 4.3+), remove:
+                - the maven-dependency-plugin block below (both executions)
+                - the maven-antrun-plugin block below
+                - the Include-Resource instruction in maven-bundle-plugin (revert to no Include-Resource)
+                - the Import-Package instruction in maven-bundle-plugin
+                - src/main/java/com/sap/db/util/SocketUtils.java
+                - src/test/java/NgdbcPackagingIT.java
+              And restore: <Embed-Dependency>ngdbc</Embed-Dependency> in maven-bundle-plugin.
+              ============================= end workaround ================================
+            -->
+            <!-- Step 1: Unpack ngdbc base classes, excluding SocketUtils and all META-INF/versions
+                 overrides (we promote the Java 9 overrides manually in step 2/3 below).
+                 Workaround for FELIX-6396: pre-OSGi-R7 frameworks ignore META-INF/versions/
+                 entirely, so we manually promote the Java 9 override classes to base paths. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-ngdbc</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.sap.cloud.db.jdbc</groupId>
+                                    <artifactId>ngdbc</artifactId>
+                                    <version>${ngdbc.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/ngdbc-stripped</outputDirectory>
+                                    <excludes>com/sap/db/util/SocketUtils*.class,META-INF/versions/**,META-INF/MANIFEST.MF,META-INF/*.RSA,META-INF/*.SF,META-INF/*.DSA</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <!-- Step 2: Unpack only META-INF/versions/9/ into a separate staging dir.
+                         These 37 classes are the Java 9 overrides for Driver, HanaConnection,
+                         statement wrappers, etc. — they remove the Java-8-only version check. -->
+                    <execution>
+                        <id>unpack-ngdbc-v9</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.sap.cloud.db.jdbc</groupId>
+                                    <artifactId>ngdbc</artifactId>
+                                    <version>${ngdbc.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/ngdbc-v9</outputDirectory>
+                                    <includes>META-INF/versions/9/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Step 3: Overlay the Java 9 classes over the base Java 8 classes.
+                 Fileset dir is META-INF/versions/9/, so relative paths (e.g. com/sap/db/jdbc/Driver.class)
+                 land directly at ngdbc-stripped/com/sap/db/jdbc/Driver.class, overwriting Java 8 versions. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>overlay-ngdbc-v9</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy todir="${project.build.directory}/ngdbc-stripped" overwrite="true">
+                                    <fileset dir="${project.build.directory}/ngdbc-v9/META-INF/versions/9"/>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -88,16 +179,21 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <multi-release>true</multi-release>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>!${bundle.namespace}.*</Export-Package>
                         <Private-Package>${bundle.namespace}.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <Embed-StripVersion>true</Embed-StripVersion>
-                        <Embed-Directory>lib</Embed-Directory>
+                        <!-- Step 4: Include the staged ngdbc content (Java 9 classes overlaid on base,
+                             no SocketUtils, no META-INF/versions). Our SocketUtils shim is added
+                             explicitly to replace any residual copy from ngdbc-stripped. -->
+                        <Include-Resource>
+                            {maven-resources},
+                            ${project.build.directory}/ngdbc-stripped,
+                            com/sap/db/util/SocketUtils.class=${project.build.directory}/classes/com/sap/db/util/SocketUtils.class
+                        </Include-Resource>
+                        <!-- resolution:=optional required because inlined ngdbc classes reference jdk.net.*,
+                             which is not exported by the pre-R7 Felix OSGi runtime (part of FELIX-6396 workaround) -->
                         <Import-Package>*;resolution:=optional</Import-Package>
                     </instructions>
                 </configuration>
