@@ -129,37 +129,11 @@ public class HanaConnectionManager {
      * @param statement The statement to execute
      */
     public void execute(String statement) throws SQLException {
-        try{
-            Statement stmt = this.connection.createStatement();
+        try (Statement stmt = this.connection.createStatement()){
             stmt.execute(statement);
         } catch (SQLException e){
             err("Could not execute statement: " + statement);
             err(e.toString());
-            throw e;
-        }
-    }
-
-    /**
-     * Executes a query statement on the database
-     *
-     * @param statement The statement to execute
-     * @param params    SQL parameters
-     * @return          The ResultSet of the query; Null in case of errors
-     */
-    private ResultSet executeQuery(String statement, HanaSqlParameter[] params) throws SQLException {
-        try{
-            PreparedStatement stmt = this.connection.prepareStatement(statement);
-
-            if(params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setObject(i+1, params[i].parameterValue, params[i].hanaDataType.getSqlDataType());
-                }
-            }
-
-            return stmt.executeQuery();
-        } catch (SQLException e){
-            err("Could not execute statement: " + statement );
-            err(e.getMessage());
             throw e;
         }
     }
@@ -182,32 +156,35 @@ public class HanaConnectionManager {
      * @return          The result of the query as a list; Null in case of errors
      */
     public HanaQueryResult executeQueryList(String statement, HanaSqlParameter[] params) throws SQLException {
-        ResultSet resultSet = this.executeQuery(statement, params);
-
-        try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int nCols = metaData.getColumnCount();
-            HanaQueryResult queryResult = new HanaQueryResult(nCols);
-            for(int col = 1; col <= nCols; col++) {
-                queryResult.setColumnMetadata(col-1, new HanaColumnInfo(
-                        metaData.getSchemaName(col),
-                        metaData.getTableName(col),
-                        metaData.getColumnName(col),
-                        metaData.getColumnType(col),
-                        false,
-                        metaData.isNullable(col) == 0
-                ));
-            }
-
-            while (resultSet.next()) {
-                Object[] newRow = new Object[nCols];
-                for (int col = 1; col <= nCols; col++) {
-                    newRow[col - 1] = resultSet.getObject(col);
+        try (PreparedStatement stmt = this.connection.prepareStatement(statement)){
+            if(params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    stmt.setObject(i+1, params[i].parameterValue, params[i].hanaDataType.getSqlDataType());
                 }
-                queryResult.addRecord(newRow);
             }
-
-            return queryResult;
+            try (ResultSet resultSet = stmt.executeQuery()){
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int nCols = metaData.getColumnCount();
+                HanaQueryResult queryResult = new HanaQueryResult(nCols);
+                for(int col = 1; col <= nCols; col++) {
+                    queryResult.setColumnMetadata(col-1, new HanaColumnInfo(
+                            metaData.getSchemaName(col),
+                            metaData.getTableName(col),
+                            metaData.getColumnName(col),
+                            metaData.getColumnType(col),
+                            false,
+                            metaData.isNullable(col) == 0
+                    ));
+                }
+                while (resultSet.next()) {
+                    Object[] newRow = new Object[nCols];
+                    for (int col = 1; col <= nCols; col++) {
+                        newRow[col - 1] = resultSet.getObject(col);
+                    }
+                    queryResult.addRecord(newRow);
+                }
+                return queryResult;
+            }
         } catch (SQLException e) {
             err("Could not fetch data. " + statement);
             err(e.toString());
@@ -225,11 +202,16 @@ public class HanaConnectionManager {
      * @return          Single value returned by the query; Null in case of errors
      */
     public <T> T executeQuerySingleValue(String statement, HanaSqlParameter[] params, Class<T> type) throws SQLException {
-        ResultSet resultSet = this.executeQuery(statement, params);
-
-        try {
-            resultSet.next();
-            return resultSet.getObject(1, type);
+        try (PreparedStatement stmt = this.connection.prepareStatement(statement)){
+            if(params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    stmt.setObject(i+1, params[i].parameterValue, params[i].hanaDataType.getSqlDataType());
+                }
+            }
+            try (ResultSet resultSet = stmt.executeQuery()){
+                resultSet.next();
+                return resultSet.getObject(1, type);
+            }
         } catch (SQLException e) {
             err("Could not fetch data. " + statement);
             err(e.toString());
@@ -245,20 +227,20 @@ public class HanaConnectionManager {
      * @throws SQLException     sql error
      */
     private void executeBatch(String statement, List<HanaSqlParameter[]> batchParameter) throws SQLException {
-        PreparedStatement batchStmt = this.connection.prepareStatement(statement);
-
-        for(HanaSqlParameter[] recordParameter : batchParameter){
-            for(int i=0; i<recordParameter.length; i++){
-                Object value = recordParameter[i].parameterValue;
-                if(value == null){
-                    batchStmt.setNull(i+1, Types.VARCHAR);
-                }else{
-                    batchStmt.setString(i+1, value.toString());
+        try (PreparedStatement batchStmt = this.connection.prepareStatement(statement)){
+            for(HanaSqlParameter[] recordParameter : batchParameter){
+                for(int i=0; i<recordParameter.length; i++){
+                    Object value = recordParameter[i].parameterValue;
+                    if(value == null){
+                        batchStmt.setNull(i+1, Types.VARCHAR);
+                    }else{
+                        batchStmt.setString(i+1, value.toString());
+                    }
                 }
+                batchStmt.addBatch();
             }
-            batchStmt.addBatch();
+            batchStmt.executeBatch();
         }
-        batchStmt.executeBatch();
     }
 
     /**
