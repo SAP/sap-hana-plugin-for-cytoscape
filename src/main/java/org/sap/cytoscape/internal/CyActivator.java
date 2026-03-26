@@ -22,8 +22,6 @@ public class CyActivator extends AbstractCyActivator {
 
     private final Properties menuConfiguration;
 
-    private HanaConnectionManager connectionManager;
-
     public CyActivator() throws IOException {
         super();
         this.menuConfiguration = IOUtils.loadResourceProperties("MenuConfiguration.properties");
@@ -35,7 +33,7 @@ public class CyActivator extends AbstractCyActivator {
         CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
 
         try {
-            this.connectionManager = new HanaConnectionManager();
+            HanaConnectionManager connectionManager = new HanaConnectionManager();
 
             // connect
             CyConnectTaskFactory connectFactory = new CyConnectTaskFactory(connectionManager);
@@ -85,13 +83,6 @@ public class CyActivator extends AbstractCyActivator {
         } catch (Exception e){
             System.err.println("Failed to activate SAP HANA plug-in for Cytoscape");
             System.err.println(e);
-        }
-    }
-
-    @Override
-    public void shutDown(BundleContext bc) {
-        if (this.connectionManager != null) {
-            this.connectionManager.disconnect();
         }
     }
 

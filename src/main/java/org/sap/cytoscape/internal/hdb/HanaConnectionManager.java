@@ -53,7 +53,7 @@ public class HanaConnectionManager {
      */
     public void connect(String host, String port, Properties connectionProperties) throws SQLException {
 
-        disconnect();
+        this.connection = null;
 
         try {
             Class.forName("com.sap.db.jdbc.Driver");
@@ -120,13 +120,6 @@ public class HanaConnectionManager {
             }catch (Exception e){
                 return false;
             }
-        }
-    }
-
-    public void disconnect() {
-        if (this.connection != null) {
-            try { this.connection.close(); } catch (SQLException ignored) {}
-            this.connection = null;
         }
     }
 
