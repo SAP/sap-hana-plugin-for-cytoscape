@@ -59,7 +59,7 @@ public class HanaConnectionManager {
             Class.forName("com.sap.db.jdbc.Driver");
             this.connection = DriverManager.getConnection("jdbc:sap://" + host + ":" + port + "/", connectionProperties);
 
-            if (this.connection.isValid(1500)){
+            if (this.connection.isValid(2)){
                 this.buildVersion = this.executeQuerySingleValue(this.sqlStrings.getProperty("GET_BUILD"), null, String.class);
             }
 
@@ -116,7 +116,7 @@ public class HanaConnectionManager {
             return false;
         }else{
             try{
-                return !this.connection.isClosed();
+                return this.connection.isValid(1);
             }catch (Exception e){
                 return false;
             }
