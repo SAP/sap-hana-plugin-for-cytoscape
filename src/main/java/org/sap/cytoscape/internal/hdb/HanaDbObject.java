@@ -1,5 +1,7 @@
 package org.sap.cytoscape.internal.hdb;
 
+import org.sap.cytoscape.internal.utils.HanaUtils;
+
 /**
  * Describes an object in an SAP HANA database (e.g. table, procedure, graph workspace, ...)
  */
@@ -20,6 +22,6 @@ public class HanaDbObject {
     }
 
     public String toString(){
-        return '"' + this.schema + "\".\"" + this.name+'"';
+        return HanaUtils.quoteIdentifier(this.schema) + "." + HanaUtils.quoteIdentifier(this.name);
     }
 }

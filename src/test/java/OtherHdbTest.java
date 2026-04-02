@@ -107,6 +107,13 @@ public class OtherHdbTest {
         Assert.assertEquals("\"MY_SCHEMA\".\"MY_TABLE\"", obj.toString());
     }
 
+    @Test
+    public void testHanaDbObjectToString_containsDoubleQuote() {
+        // Embedded double quotes must be escaped as "" per SQL standard identifier quoting.
+        HanaDbObject obj = new HanaDbObject("MY\"SCHEMA", "MY\"TABLE");
+        Assert.assertEquals("\"MY\"\"SCHEMA\".\"MY\"\"TABLE\"", obj.toString());
+    }
+
     // -------------------------------------------------------------------------
     // HanaQueryResult — unmodifiable list + defensive clone
     // -------------------------------------------------------------------------
