@@ -82,33 +82,30 @@ public class HanaConnectionCredentialsTest {
 
     @Test
     public void testGenerateAdvancedProperties_emptyValue(){
-        // "key=".split("=") returns ["key"] only — Java drops the trailing empty token.
-        // Accessing index [1] then throws ArrayIndexOutOfBoundsException, which is caught
-        // and rethrown as HanaConnectionManagerException.
-        // This test documents the actual behaviour of the existing code.
+        // "key=".split("=", 2) returns ["key", ""] — the value is an empty string.
+        // This is accepted and stored as a property with an empty value.
         HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
         try {
             cred.advancedProperties = "key=";
-            cred.generateAdvancedProperties();
-            fail("Expected HanaConnectionManagerException for entry with empty value");
-        } catch (HanaConnectionManagerException e) {
-            // expected — empty value after '=' is not supported by current implementation
+            Properties props = cred.generateAdvancedProperties();
+            Assert.assertEquals(1, props.size());
+            Assert.assertEquals("", props.getProperty("key"));
         } catch (Exception e) {
-            fail("Unexpected exception type: " + e);
+            fail("Empty value should be accepted: " + e);
         }
     }
 
     @Test
-    public void testGenerateAdvancedProperties_valueContainsEquals(){
-        // Current implementation splits on ALL '=' characters, so 'key=val=ue'
-        // results in key="key", value="val" (the trailing "=ue" is silently dropped).
-        // This test documents the actual behaviour of the existing code.
+    public void testGenerateAdvancedProperties_valuePreservedWhenItContainsEquals(){
+        // Base64-encoded values (SSL certificates, hdbuserstore keys) commonly contain '='.
+        // split("=") splits on every '=' and silently truncates the value.
+        // split("=", 2) limits to two tokens, preserving everything after the first '='.
         HanaConnectionCredentials cred = new HanaConnectionCredentials(null, null, null, null, null, null);
         try {
             cred.advancedProperties = "key=val=ue";
             Properties props = cred.generateAdvancedProperties();
             Assert.assertEquals(1, props.size());
-            Assert.assertEquals("val", props.getProperty("key"));
+            Assert.assertEquals("val=ue", props.getProperty("key"));
         } catch (Exception e) {
             fail();
         }

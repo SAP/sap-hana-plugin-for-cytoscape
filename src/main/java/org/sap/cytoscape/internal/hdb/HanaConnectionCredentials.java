@@ -36,7 +36,7 @@ public class HanaConnectionCredentials extends AbstractConnectionCredentials {
             try{
                 String[] splitBySemicolon = this.advancedProperties.split(";");
                 for(String keyValEntry : splitBySemicolon) {
-                    String[] splitByAssignment = keyValEntry.split("=");
+                    String[] splitByAssignment = keyValEntry.split("=", 2);
                     resultProperties.setProperty(splitByAssignment[0], splitByAssignment[1]);
                 }
             } catch (Exception e) {
