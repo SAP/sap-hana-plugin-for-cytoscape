@@ -105,20 +105,20 @@ public class CyConnectTaskTunables {
 
             Properties props = IOUtils.loadProperties();
 
-            this.host = props.getProperty("hdb.host");
-            this.port = props.getProperty("hdb.port");
-            this.advancedProperties = props.getProperty("hdb.advancedproperties");
-            this.username = props.getProperty("hdb.username");
-            this.password = props.getProperty("hdb.password");
+            this.host = props.getProperty("hdb.host", "");
+            this.port = props.getProperty("hdb.port", "");
+            this.advancedProperties = props.getProperty("hdb.advancedproperties", "");
+            this.username = props.getProperty("hdb.username", "");
+            this.password = props.getProperty("hdb.password", "");
 
             this.enableProxyConfiguration = Boolean.parseBoolean(props.getProperty("hdb.proxy.enabled", "false"));
             if(props.getProperty("hdb.proxy.type") != null){
                 this.proxyType.setSelectedValue(props.getProperty("hdb.proxy.type"));
             }
-            this.proxyHost = props.getProperty("hdb.proxy.host");
-            this.proxyPort = props.getProperty("hdb.proxy.port");
-            this.proxyUsername = props.getProperty("hdb.proxy.username");
-            this.proxyPassword = props.getProperty("hdb.proxy.password");
+            this.proxyHost = props.getProperty("hdb.proxy.host", "");
+            this.proxyPort = props.getProperty("hdb.proxy.port", "");
+            this.proxyUsername = props.getProperty("hdb.proxy.username", "");
+            this.proxyPassword = props.getProperty("hdb.proxy.password", "");
 
             // assume that the user still wants to store the password, if this
             // has been done before
@@ -164,20 +164,20 @@ public class CyConnectTaskTunables {
     public void saveToCacheFile() throws IOException {
 
         Properties credProps = new Properties();
-        credProps.setProperty("hdb.host", this.host);
-        credProps.setProperty("hdb.advancedproperties", this.advancedProperties);
-        credProps.setProperty("hdb.port", this.port);
-        credProps.setProperty("hdb.username", this.username);
+        credProps.setProperty("hdb.host", this.host == null ? "" : this.host);
+        credProps.setProperty("hdb.advancedproperties", this.advancedProperties == null ? "" : this.advancedProperties);
+        credProps.setProperty("hdb.port", this.port == null ? "" : this.port);
+        credProps.setProperty("hdb.username", this.username == null ? "" : this.username);
 
         credProps.setProperty("hdb.proxy.enabled", String.valueOf(this.enableProxyConfiguration));
         credProps.setProperty("hdb.proxy.type", this.proxyType.getSelectedValue());
-        credProps.setProperty("hdb.proxy.host", this.proxyHost);
-        credProps.setProperty("hdb.proxy.port", this.proxyPort);
-        credProps.setProperty("hdb.proxy.username", this.proxyUsername);
+        credProps.setProperty("hdb.proxy.host", this.proxyHost == null ? "" : this.proxyHost);
+        credProps.setProperty("hdb.proxy.port", this.proxyPort == null ? "" : this.proxyPort);
+        credProps.setProperty("hdb.proxy.username", this.proxyUsername == null ? "" : this.proxyUsername);
 
         if (savePassword) {
-            credProps.setProperty("hdb.password", this.password);
-            credProps.setProperty("hdb.proxy.password", this.proxyPassword);
+            credProps.setProperty("hdb.password", this.password == null ? "" : this.password);
+            credProps.setProperty("hdb.proxy.password", this.proxyPassword == null ? "" : this.proxyPassword);
         } else {
             // overwrite previously saved passwords
             credProps.setProperty("hdb.password", "");
