@@ -53,6 +53,9 @@ public class HanaConnectionManager {
      */
     public void connect(String host, String port, Properties connectionProperties) throws SQLException {
 
+        if (this.connection != null) {
+            try { this.connection.close(); } catch (SQLException ignore) {}
+        }
         this.connection = null;
 
         try {
