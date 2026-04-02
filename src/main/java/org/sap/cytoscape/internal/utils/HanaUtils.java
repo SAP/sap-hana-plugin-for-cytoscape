@@ -21,7 +21,7 @@ public class HanaUtils {
      * @return      Quoted String
      */
     public static String quoteIdentifier(String id){
-        return '"' + id + '"';
+        return '"' + id.replace("\"", "\"\"") + '"';
     }
 
     /**

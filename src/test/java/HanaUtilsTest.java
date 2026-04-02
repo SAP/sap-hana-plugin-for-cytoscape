@@ -37,6 +37,13 @@ public class HanaUtilsTest {
         Assert.assertEquals("\"\"", HanaUtils.quoteIdentifier(""));
     }
 
+    @Test
+    public void testQuoteIdentifier_containsDoubleQuote() {
+        // An embedded " must be escaped as "" per SQL standard identifier quoting.
+        // Without escaping, foo"bar produces "foo"bar" which breaks out of the identifier.
+        Assert.assertEquals("\"foo\"\"bar\"", HanaUtils.quoteIdentifier("foo\"bar"));
+    }
+
     // -------------------------------------------------------------------------
     // isCloudEdition
     // -------------------------------------------------------------------------
