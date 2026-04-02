@@ -58,3 +58,6 @@ CREATE_GRAPH_WORKSPACE=\
             KEY COLUMN "%s" \
         VERTEX TABLE "%s"."%s" \
             KEY COLUMN "%s"
+
+DROP_TABLE_IF_EXISTS=\
+    DROP TABLE IF EXISTS %s

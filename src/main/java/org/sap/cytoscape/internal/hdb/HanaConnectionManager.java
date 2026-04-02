@@ -507,6 +507,16 @@ public class HanaConnectionManager {
     }
 
     /**
+     * Drops a table if it exists. Used to clean up after a partially failed workspace upload.
+     *
+     * @param table     Schema and name of the table to drop
+     * @throws SQLException     sql error
+     */
+    public void dropTableIfExists(HanaDbObject table) throws SQLException {
+        execute(String.format(sqlStrings.getProperty("DROP_TABLE_IF_EXISTS"), table));
+    }
+
+    /**
      * Creates a new table on the database instance
      *
      * @param newTableLocation  Schema and name of the table to create

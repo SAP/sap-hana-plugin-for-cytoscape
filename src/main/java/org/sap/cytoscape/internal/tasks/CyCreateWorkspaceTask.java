@@ -69,45 +69,53 @@ public class CyCreateWorkspaceTask extends AbstractTask {
         }
 
         taskMonitor.setStatusMessage("Creating node table");
-        // create nodes table
-        this.connectionManager.createTable(
-                newWorkspace.getNodeTableDbObject(),
-                newWorkspace.getNodeFieldList()
-        );
+        boolean nodeTableCreated = false;
+        boolean edgeTableCreated = false;
+        try {
+            // create nodes table
+            this.connectionManager.createTable(
+                    newWorkspace.getNodeTableDbObject(),
+                    newWorkspace.getNodeFieldList()
+            );
+            nodeTableCreated = true;
 
-        taskMonitor.setStatusMessage("Uploading node records");
-        //insert values
-        this.connectionManager.bulkInsertData(
-                newWorkspace.getNodeTableDbObject(),
-                newWorkspace.getNodeFieldList(),
-                newWorkspace.getNodeTableData()
-        );
+            taskMonitor.setStatusMessage("Uploading node records");
+            this.connectionManager.bulkInsertData(
+                    newWorkspace.getNodeTableDbObject(),
+                    newWorkspace.getNodeFieldList(),
+                    newWorkspace.getNodeTableData()
+            );
 
-        taskMonitor.setStatusMessage("Creating edge table");
-        // create edges table
-        this.connectionManager.createTable(
-                newWorkspace.getEdgeTableDbObject(),
-                newWorkspace.getEdgeFieldList()
-        );
+            taskMonitor.setStatusMessage("Creating edge table");
+            this.connectionManager.createTable(
+                    newWorkspace.getEdgeTableDbObject(),
+                    newWorkspace.getEdgeFieldList()
+            );
+            edgeTableCreated = true;
 
-        taskMonitor.setStatusMessage("Uploading edge records");
-        //insert values
-        this.connectionManager.bulkInsertData(
-                newWorkspace.getEdgeTableDbObject(),
-                newWorkspace.getEdgeFieldList(),
-                newWorkspace.getEdgeTableData()
-        );
+            taskMonitor.setStatusMessage("Uploading edge records");
+            this.connectionManager.bulkInsertData(
+                    newWorkspace.getEdgeTableDbObject(),
+                    newWorkspace.getEdgeFieldList(),
+                    newWorkspace.getEdgeTableData()
+            );
 
-        taskMonitor.setStatusMessage("Linking Cytoscape Network to SAP HANA Graph Workspace");
-        CyUtils.enhanceCyNetworkWithDatabaseLinkInformation(
-                selectedNetwork.getDefaultNetworkTable(),
-                selectedNetwork.getSUID(),
-                connectionManager.getInstanceIdentifier(),
-                newWorkspace.getWorkspaceDbObject()
-        );
+            taskMonitor.setStatusMessage("Linking Cytoscape Network to SAP HANA Graph Workspace");
+            CyUtils.enhanceCyNetworkWithDatabaseLinkInformation(
+                    selectedNetwork.getDefaultNetworkTable(),
+                    selectedNetwork.getSUID(),
+                    connectionManager.getInstanceIdentifier(),
+                    newWorkspace.getWorkspaceDbObject()
+            );
 
-        taskMonitor.setStatusMessage("Creating Graph Workspace");
-        // create graph workspace
-        this.connectionManager.createGraphWorkspace(newWorkspace);
+            taskMonitor.setStatusMessage("Creating Graph Workspace");
+            this.connectionManager.createGraphWorkspace(newWorkspace);
+
+        } catch (Exception e) {
+            // Drop any tables already created so the user can retry cleanly.
+            if (edgeTableCreated) try { this.connectionManager.dropTableIfExists(newWorkspace.getEdgeTableDbObject()); } catch (Exception ignore) {}
+            if (nodeTableCreated) try { this.connectionManager.dropTableIfExists(newWorkspace.getNodeTableDbObject()); } catch (Exception ignore) {}
+            throw e;
+        }
     }
 }
