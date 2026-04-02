@@ -90,5 +90,35 @@ The plug-in reconciles the current HANA graph workspace with the Cytoscape netwo
 
 > Note: Refresh is a read-only operation — it pulls changes from HANA into Cytoscape and does not modify any data in SAP HANA.
 
+## Developer Information
+
+### Prerequisites
+- [SapMachine 17](https://sap.github.io/SapMachine/) (Java 17)
+- Apache Maven 3.x
+- Cytoscape 3.10.0 (for local installation and smoke-testing)
+
+### Build
+```bash
+mvn verify              # full build + all tests
+mvn package -DskipTests # fast build, skip tests
+```
+The output JAR is at `target/sap-hana-plugin-for-cytoscape-<version>.jar`.
+
+### Running Tests
+The project uses JUnit 4. Most tests run without any external dependencies. The integration tests in `HanaConnectionManagerTest` require a live SAP HANA instance — provide credentials in:
+```
+src/test/resources/testcredentials.properties
+```
+This file is git-ignored; copy the `.template` file in the same directory and fill in your instance details. If the file is absent, the integration tests are skipped automatically.
+
+CI runs with `-DskipTests` since a live HANA instance is not available there.
+
+### Local Installation
+After building, copy the JAR into Cytoscape's apps folder and restart Cytoscape:
+```bash
+cp target/sap-hana-plugin-for-cytoscape-<version>.jar \
+   ~/CytoscapeConfiguration/3/apps/installed/
+```
+
 ## Licensing
 Copyright (2021-)2026 SAP SE or an SAP affiliate company and `sap-hana-plugin-for-cytoscape` contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available via the [REUSE tool](https://api.reuse.software/info/github.com/SAP/sap-hana-plugin-for-cytoscape).
